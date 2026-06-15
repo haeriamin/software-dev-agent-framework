@@ -77,31 +77,6 @@ tasks where it catches a bug that would cost a lot to find and fix later. So it 
 worth it for important code, and not worth it for throwaway code. For small changes, use
 `--micro` or just plain Copilot.
 
-### By the numbers
-
-- **What it enforces**: **27** rules checked on every review · **100%** of changes must link
-  a spec and a rule · **only humans merge** · **2** tools (21 commands each) · **0** servers or builds.
-- **What it costs** (estimate): **~8–9** model steps per full feature (**~3** with `--micro`).
-- **What is still missing**: a large test on cost, speed, and bug rate. Get your own numbers
-  — [run a 2-week trial](docs/10-validation.md).
-
-**Cost — model steps per feature (estimate):**
-
-| Way to run it | Steps | |
-|---------------|------:|--|
-| Plain Copilot | 1 | `█` |
-| `/dev.feature --micro` | 3 | `███` |
-| Full process | ~8–9 | `█████████` |
-
-**What every review checks — 29 rules:**
-
-```mermaid
-pie showData title 29 rules per review
-  "Must fix (blocking)" : 16
-  "Should fix (warning)" : 9
-  "Note (info)" : 4
-```
-
 ## Get started
 
 ```bash
