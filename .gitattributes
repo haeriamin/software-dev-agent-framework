@@ -1,0 +1,19 @@
+# Normalize all text to LF in the repo; keep LF on checkout for files where it matters.
+* text=auto
+
+# Shell scripts and hooks must be LF everywhere or they break on macOS/Linux and Git Bash.
+*.sh text eol=lf
+
+# Keep markdown/config LF for byte-identical skill parity across platforms (CI checks this).
+*.md text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.ts text eol=lf
+*.svg text eol=lf
+
+# PowerShell is fine with LF, but make it explicit.
+*.ps1 text eol=lf
+
+# Binaries
+*.vsix binary
+*.png binary

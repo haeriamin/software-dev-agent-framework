@@ -1,0 +1,68 @@
+# 9 · Troubleshooting
+
+## "My write was blocked"
+
+Working as designed. `/standards/` and `/exemplars/` are read-only to agents
+(Constitution Principle I, enforced by PreToolUse hooks in both runtimes). Add files
+there yourself, then run the matching ingest command.
+
+## A slash command doesn't appear
+
+- **Claude Code**: commands are `/dev:name` (colon). Restart the session after adding
+  command files. Frontmatter must start at byte 0 — a UTF-8 BOM breaks it (write files
+  without BOM; `.gitattributes` keeps line endings sane).
+- **Copilot**: commands are `/dev.name` (dot); prompt files live in `.github/prompts/`.
+  Make sure you opened the framework folder (or a generated target workspace).
+
+## Agent can't edit my target
+
+- **Copilot**: open `targets/<id>.code-workspace`, not the framework folder alone — the
+  target must be a workspace folder.
+- **Claude Code**: the target path must be in `permissions.additionalDirectories` in
+  `.claude/settings.local.json` — `/dev.target register` adds it; re-run
+  `/dev.target inspect <id>` to verify.
+
+## Hooks on macOS/Linux
+
+`.claude/settings.json` ships wired to the PowerShell hook variants (Windows default).
+Swap each command for its `.sh` sibling per `.claude/hooks/README.md` and
+`chmod +x .claude/hooks/*.sh`. The `.sh` variants need `python3` on PATH.
+
+## "Analysis is stale" / fingerprint mismatch
+
+The target changed since `/dev.analyze` ran. Re-run it — plans and reviews refuse to
+build on stale maps by design.
+
+## Reviewer keeps FAILing a slice
+
+Read the sub-scores in the review report:
+
+- `test_evidence` low → the test report is missing, stale, or behaviors are uncovered — run `/dev.test`
+- `standards_compliance` low → itemized findings list the exact clauses and `file:line`
+- `spec_alignment` low → requirements unimplemented or out-of-scope drift
+
+After 2 retries it escalates — answer the escalation's questions via
+`/dev.review-escalated` instead of re-running blindly.
+
+## Dashboard says "No framework root found"
+
+Open a workspace containing `.specify/memory/constitution.md`, or set
+`sddDashboard.frameworkRoot` to the framework's absolute path.
+
+## CI failures
+
+| Job step | Meaning |
+|----------|---------|
+| Skill parity | `.github/skills/` and `.claude/skills/` differ — copy the edited file to the other tree |
+| Hook smoke tests | A hook script regressed its block/allow exit codes |
+| Core scripts | `create-new-feature.sh` / `check-prerequisites.sh` behavior changed |
+| JSON artifacts | A config file no longer parses |
+
+## Wiki feels wrong
+
+`/dev.lint-wiki` pinpoints it: broken links, stale summaries (re-ingest), citation
+integrity, scope integrity, log-format violations. Remediation always goes through the
+ingest commands or human edits — never hand-patch derived files.
+
+---
+[← Customization](08-customization.md) · [Guide index](README.md)

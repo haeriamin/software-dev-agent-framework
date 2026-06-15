@@ -1,0 +1,64 @@
+# 3 · Managing Targets
+
+Targets are the registered external codebases agents work on — the framework's only
+bridge to your code.
+
+## Register an existing project
+
+```bash
+/dev.target register path/to/my-app
+```
+
+The Orchestrator probes the project (stack, git state, test/lint/build commands from its
+manifest — never guessed) and creates:
+
+- `targets/my-app.yml` — the registry entry (path, stack, commands, conventions, status)
+- `targets/my-app.code-workspace` — a multi-root VS Code workspace (framework + target);
+  **open this when using Copilot** so the target folder is editable
+- an `additionalDirectories` entry in `.claude/settings.local.json` (gitignored,
+  machine-local) so **Claude Code** can edit the target
+
+Options: `--id <name>` to override the derived id, `--stack <csv>` to declare the stack.
+
+## Register a greenfield project
+
+```bash
+/dev.target register path/to/new-app --new
+```
+
+Creates the directory and runs `git init`. From there, `/dev.feature <id> "<description>"`
+detects the empty target and runs greenfield mode automatically — design approval, then
+scaffold, then implementation (see [Building Features](04-building-features.md)).
+
+## Inspect, update, list
+
+```bash
+/dev.target inspect my-app          # entry + live probe (branch, dirty files)
+/dev.target update my-app test_command="npm test"
+/dev.target list
+```
+
+## The target entry
+
+`targets/<id>.yml` fields worth knowing:
+
+| Field | Meaning |
+|-------|---------|
+| `test_command` / `lint_command` | What the Tester and Implementer actually run — keep these accurate |
+| `complexity_class` | Default complexity for slices on this target |
+| `conventions` | Free-text notes; the Implementer follows these where standards are silent |
+| `exceptions` | Exception-registry ids (EXC-NNN) that apply to this target |
+| `status` | `active` / `paused` / `archived` |
+
+## Safety rules
+
+- Target paths must be **outside** the framework repo.
+- Git targets: all agent work happens on branch `sdd/<slice>`; agents never commit to
+  your default branch and never push.
+- Non-git targets: originals are copied to `work-queue/backups/<slice>/` before any
+  modification.
+- Personal target entries contain absolute paths — fine for a private fork, don't commit
+  them to a shared public repo.
+
+---
+[← Core Concepts](02-concepts.md) · Next: [Building Features →](04-building-features.md)

@@ -1,0 +1,14 @@
+{
+  "integration": "claude",
+  "version": "0.1.0",
+  "installed_at": "2026-06-09T00:00:00+00:00",
+  "entry_points": {
+    "global_instructions": "CLAUDE.md",
+    "agents_dir": ".claude/agents",
+    "commands_dir": ".claude/commands",
+    "skills_dir": ".claude/skills",
+    "hooks": ".claude/settings.json"
+  },
+  "slash_syntax": "/dev:analyze",
+  "notes": "Thin adapters only; canonical runbooks live in .specify/extensions/dev/commands/. Skills must stay byte-identical to .github/skills (checked by /dev.lint-wiki)."
+}

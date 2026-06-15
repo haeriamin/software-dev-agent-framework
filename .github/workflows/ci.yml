@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  dashboard:
+    name: Dashboard extension compiles
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run compile
+
+  integrity:
+    name: Framework integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skill parity (.github/skills must equal .claude/skills)
+        run: diff -r .github/skills .claude/skills
+
+      - name: Hook smoke tests (bash variants)
+        run: |
+          chmod +x .claude/hooks/*.sh .github/hooks/scripts/*.sh
+          # Claude PreToolUse hook: immutable path must block with exit 2
+          echo '{"tool_name":"Write","tool_input":{"file_path":"standards/x.md"}}' \
+            | .claude/hooks/validate-immutable-paths.sh && exit 1 || [ $? -eq 2 ]
+          # Claude PreToolUse hook: normal path must pass
+          echo '{"tool_name":"Write","tool_input":{"file_path":"wiki/concepts/x.md"}}' \
+            | .claude/hooks/validate-immutable-paths.sh
+          # Copilot PreToolUse hook: immutable path must block with exit 1
+          echo '{"tool_input":{"path":"exemplars/x.ts"}}' \
+            | .github/hooks/scripts/validate-immutable-paths.sh && exit 1 || [ $? -eq 1 ]
+          # Quality hook must never block
+          echo '{"tool_input":{"file_path":"README.md"}}' \
+            | .github/hooks/scripts/check-code-quality.sh
+
+      - name: Bash-safety hook smoke tests
+        run: |
+          chmod +x .claude/hooks/validate-bash-safety.sh .github/hooks/scripts/validate-bash-safety.sh
+          # shell write into an immutable dir must block (Claude exit 2 / Copilot exit 1)
+          echo '{"tool_input":{"command":"echo x > standards/y.md"}}' \
+            | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
+          echo '{"tool_input":{"command":"cp a exemplars/b"}}' \
+            | .github/hooks/scripts/validate-bash-safety.sh && exit 1 || [ $? -eq 1 ]
+          # git push / merge must block
+          echo '{"tool_input":{"command":"git push origin main"}}' \
+            | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
+          # normal commands and read-only access to immutable dirs must pass
+          echo '{"tool_input":{"command":"npm test"}}' \
+            | .claude/hooks/validate-bash-safety.sh
+          echo '{"tool_input":{"command":"cat standards/api-design.md"}}' \
+            | .claude/hooks/validate-bash-safety.sh
+
+      - name: Referenced hook scripts exist
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys, re
+          missing = []
+          h = json.load(open(".github/hooks/hooks.json"))["hooks"]
+          for phase in h.values():
+              for entry in phase:
+                  for key in ("command", "windows"):
+                      v = entry.get(key, "")
+                      m = re.search(r'(\.github/hooks/scripts/[\w.-]+)', v)
+                      if m and not pathlib.Path(m.group(1)).exists():
+                          missing.append(m.group(1))
+          s = json.load(open(".claude/settings.json"))["hooks"]
+          for phase in s.values():
+              for grp in phase:
+                  for entry in grp["hooks"]:
+                      m = re.search(r'(\.claude/hooks/[\w.-]+)', entry["command"])
+                      if m and not pathlib.Path(m.group(1)).exists():
+                          missing.append(m.group(1))
+          if missing:
+              print("MISSING HOOK SCRIPTS:", *sorted(set(missing)), sep="\n  "); sys.exit(1)
+          print("all referenced hook scripts present")
+          PY
+
+      - name: Core scripts smoke test (bash variants)
+        run: |
+          chmod +x .specify/scripts/bash/*.sh
+          .specify/scripts/bash/create-new-feature.sh smoke-test | grep -q '"FEATURE_NUM":"001"'
+          # Fresh template carries a NEEDS CLARIFICATION marker -> prereq check must fail
+          .specify/scripts/bash/check-prerequisites.sh plan && exit 1 || true
+          rm -rf specs/001-smoke-test .specify/feature.json
+
+      - name: JSON artifacts parse
+        run: |
+          for f in .github/hooks/hooks.json .claude/settings.json \
+                   .specify/workflows/workflow-registry.json .specify/init-options.json \
+                   .specify/integrations/copilot.manifest.json .specify/integrations/claude.manifest.json \
+                   tools/dashboard/package.json tools/dashboard/tsconfig.json; do
+            python3 -m json.tool "$f" > /dev/null || { echo "INVALID JSON: $f"; exit 1; }
+          done

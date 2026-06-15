@@ -1,0 +1,51 @@
+schema_version: "1.0"
+workflow:
+  id: "speckit"
+  name: "Generic SDD Cycle"
+  version: "0.1.0"
+  author: "[TBD]"
+  description: "Plain spec-kit lifecycle: specify → clarify → plan → tasks → implement → analyze. Extension hooks fire per .specify/extensions.yml."
+
+requires:
+  speckit_version: ">=0.7.2"
+  integrations:
+    any: ["copilot", "claude"]
+
+inputs:
+  scope:
+    type: string
+    required: true
+    prompt: "Describe the slice"
+  integration:
+    type: string
+    default: "copilot"
+    prompt: "Integration to use (copilot, claude)"
+
+steps:
+  - id: specify
+    command: speckit.specify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.scope }}"
+
+  - id: clarify
+    command: speckit.clarify
+    integration: "{{ inputs.integration }}"
+    optional: true
+
+  - id: plan
+    command: speckit.plan
+    integration: "{{ inputs.integration }}"
+
+  - id: tasks
+    command: speckit.tasks
+    integration: "{{ inputs.integration }}"
+
+  - id: implement
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    optional: true

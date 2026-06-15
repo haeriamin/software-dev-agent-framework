@@ -1,0 +1,21 @@
+# Framework
+work-queue/backups/*
+!work-queue/backups/.gitkeep
+wiki/_lint-report.md
+targets/*.code-workspace
+.specify/feature.json
+
+# Machine-local (target access permissions land here, never in shared settings.json)
+.claude/settings.local.json
+
+# Dashboard extension
+tools/dashboard/node_modules/
+tools/dashboard/out/
+tools/dashboard/*.vsix
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Local editor workspace files at repo root
+/*.code-workspace
