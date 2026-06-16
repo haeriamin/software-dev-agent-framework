@@ -3,8 +3,8 @@
 Every command available in the framework, for new users and agents. Canonical procedure
 for each `/dev.*` command lives in `.specify/extensions/dev/commands/<command>.md`.
 
-**Slash syntax**: GitHub Copilot uses dots (`/dev.analyze`); Claude Code uses colons
-(`/dev:analyze`). This file writes the Copilot form — the mapping is mechanical.
+**Slash syntax**: GitHub Copilot and Codex use dots (`/dev.analyze`); Claude Code uses colons
+(`/dev:analyze`). This file writes the dot form — the mapping is mechanical.
 
 ---
 

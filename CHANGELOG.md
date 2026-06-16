@@ -3,6 +3,16 @@
 Format: [Keep a Changelog](https://keepachangelog.com) · [SemVer](https://semver.org).
 The constitution carries its own version; amendments are logged in `wiki/log.md`.
 
+## [Unreleased]
+
+### Added
+- **Codex CLI runtime adapter (preview)** — a third runtime peer to GitHub Copilot and Claude Code:
+  8 personas (`.codex/agents/*.toml`), 21 `/dev.*` + `/speckit.*` commands (`.codex/prompts/*.md`),
+  `AGENTS.md` global rules, `.codex/hooks.json` (reuses the shipped guard scripts), and
+  `.codex/config.toml`. Same canonical runbooks and standards as the other runtimes. Two runtime
+  behaviours are pending a verification spike — autonomous isolated sub-agent spawning, and the
+  `apply_patch` hook payload — see `.codex/README.md` and `.codex/VERIFICATION.md`.
+
 ## [0.1.0] — 2026-06-11
 
 Initial public release.

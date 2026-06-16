@@ -1,0 +1,48 @@
+{
+  "_comment": "Codex CLI hook wiring — mirrors .claude/settings.json and .github/hooks/hooks.json. Same four guard scripts; Codex matchers use its tool names (apply_patch|Edit|Write for file writes, Bash for shell). Codex delivers the same stdin JSON (tool_name/tool_input/tool_response) and blocks on exit code 2, so the existing scripts apply. NOTE: Codex routes file edits through apply_patch (a patch diff), so validate-immutable-paths must read the patch target, not only tool_input.file_path — verify per .codex/VERIFICATION.md. Windows uses the .ps1 variants below; on macOS/Linux point command at the matching .github/hooks/scripts/*.sh.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/validate-immutable-paths.ps1",
+            "timeout": 10,
+            "statusMessage": "Guarding /standards/ + /exemplars/ (read-only)"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/validate-bash-safety.ps1",
+            "timeout": 10,
+            "statusMessage": "Blocking writes to immutable paths + git push/merge (human-only)"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/log-tool-use.ps1",
+            "timeout": 15,
+            "statusMessage": "Appending to wiki/log.md"
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/check-code-quality.ps1",
+            "timeout": 30,
+            "statusMessage": "Quality lint on written files"
+          }
+        ]
+      }
+    ]
+  }
+}

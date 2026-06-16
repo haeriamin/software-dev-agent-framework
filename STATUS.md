@@ -5,8 +5,8 @@
 ## What it is
 
 It is a set of rules and steps that sit on top of [spec-kit](https://github.com/github/spec-kit)
-and drive GitHub Copilot or Claude Code. The code parts are small (hooks, scripts, the
-dashboard). Most of the framework is written instructions that the model follows. So how
+and drive GitHub Copilot or Claude Code (a Codex CLI runtime is in preview — see `.codex/`).
+The code parts are small (hooks, scripts, the dashboard). Most of the framework is written instructions that the model follows. So how
 well it works depends on how well the model follows instructions — helped by an independent
 review step and by hooks that block unsafe actions, not by a program that forces every rule.
 

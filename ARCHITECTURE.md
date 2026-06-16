@@ -1,7 +1,7 @@
 # Software Development Agent Framework
 ## Architecture & Implementation Guide (SDD-native)
 
-> Canonical patterns: [spec-kit](https://github.com/github/spec-kit) for the SDD lifecycle, [Kumo Coding Agent](https://github.com/kumo-ai/kumo-coding-agent) for multi-agent topology. Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter) and the Claude Code subagent format (`name` + `description` + `tools` frontmatter). Both runtimes execute identical canonical runbooks.
+> Canonical patterns: [spec-kit](https://github.com/github/spec-kit) for the SDD lifecycle, [Kumo Coding Agent](https://github.com/kumo-ai/kumo-coding-agent) for multi-agent topology. Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), and the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML). All three runtimes execute identical canonical runbooks.
 
 ---
 
@@ -20,7 +20,7 @@
 11. [Knowledge Ingestion](#11-knowledge-ingestion)
 12. [Safe Autonomous Implementation](#12-safe-autonomous-implementation)
 13. [Testing & Review Gates](#13-testing--review-gates)
-14. [Dual-Runtime Strategy (Copilot + Claude Code)](#14-dual-runtime-strategy)
+14. [Multi-Runtime Strategy (Copilot + Claude Code + Codex)](#14-multi-runtime-strategy)
 15. [VS Code Dashboard Extension](#15-vs-code-dashboard-extension)
 16. [Scaling Strategy](#16-scaling-strategy)
 17. [Appendix: Quick Reference](#17-appendix-quick-reference)
@@ -29,7 +29,7 @@
 
 ## 1. System Overview
 
-A **multi-agent, spec-driven software development platform** running inside VS Code with GitHub Copilot or inside Claude Code. Three complementary layers:
+A **multi-agent, spec-driven software development platform** running inside VS Code with GitHub Copilot, inside Claude Code, or via the Codex CLI. Three complementary layers:
 
 - **SDD layer** (spec-kit) — every development unit is a *slice* that flows through specify → clarify → plan → tasks → implement → analyze. Provides reproducibility, review gates, and a unified vocabulary for "what we're changing and why."
 - **Dev layer** (the `dev` spec-kit extension) — domain commands (`/dev.analyze`, `/dev.implement`, `/dev.review`, …) and personas (Analyst, Architect, Implementer, Tester, Reviewer, …) that compose into the SDD layer via extension hooks.
@@ -46,7 +46,7 @@ A **multi-agent, spec-driven software development platform** running inside VS C
 | **Standards as law** | All implementation is gated by `/standards/` + curated `/exemplars/`. |
 | **Exemplars as memory** | Reference implementations and anti-patterns are first-class knowledge, compiled into `wiki/pattern-library.md`. |
 | **Wiki as ground truth** | The agent-maintained `/wiki/` accumulates engineering intelligence; `wiki/log.md` is the append-only audit trail. |
-| **Runtime-agnostic** | Copilot and Claude Code adapters are thin; canonical runbooks are shared. |
+| **Runtime-agnostic** | Copilot, Claude Code, and Codex adapters are thin; canonical runbooks are shared. |
 
 ### Agent Topology
 
@@ -537,9 +537,10 @@ Auditor writes `review-reports/portfolio-summary.md` with verdict counts per tar
 
 ---
 
-## 14. Dual-Runtime Strategy
+## 14. Multi-Runtime Strategy
 
-One brain, two adapters. The canonical content lives in runtime-neutral files:
+One brain, three adapters (Copilot, Claude Code, Codex). The canonical content lives in
+runtime-neutral files:
 
 ```
 .specify/extensions/dev/commands/*.md   ← runbooks (the WHAT and HOW of each command)
@@ -550,12 +551,18 @@ One brain, two adapters. The canonical content lives in runtime-neutral files:
 
 Adapters:
 
-| Layer | Copilot file | Claude Code file | Content |
-|-------|--------------|------------------|---------|
-| Global rules | `.github/copilot-instructions.md` | `CLAUDE.md` | Same rules, same tables |
-| Command entry | `.github/prompts/dev.analyze.prompt.md` (`agent:` pointer) | `.claude/commands/dev/analyze.md` | Thin: adopt persona, follow runbook, pass `$ARGUMENTS` |
-| Persona | `.github/agents/analyst.agent.md` | `.claude/agents/analyst.md` | Same persona text; frontmatter differs (Copilot `tools:`/`handoffs:` vs Claude `name:`/`tools:`) |
-| Hooks | `.github/hooks/hooks.json` | `.claude/settings.json` | Same scripts, both shells |
+| Layer | Copilot file | Claude Code file | Codex file | Content |
+|-------|--------------|------------------|------------|---------|
+| Global rules | `.github/copilot-instructions.md` | `CLAUDE.md` | `AGENTS.md` | Same rules, same tables |
+| Command entry | `.github/prompts/dev.analyze.prompt.md` (`agent:` pointer) | `.claude/commands/dev/analyze.md` | `.codex/prompts/dev.analyze.md` | Thin: adopt persona, follow runbook, pass `$ARGUMENTS` |
+| Persona | `.github/agents/analyst.agent.md` | `.claude/agents/analyst.md` | `.codex/agents/analyst.toml` | Same persona text; frontmatter differs per runtime (Codex uses `developer_instructions` + `sandbox_mode`) |
+| Hooks | `.github/hooks/hooks.json` | `.claude/settings.json` | `.codex/hooks.json` | Same scripts; Codex matchers use `apply_patch`/`Bash` |
+
+The **Codex adapter** (`.codex/`) is a preview third runtime: 8 personas (`.codex/agents/*.toml`),
+21 commands (`.codex/prompts/*.md`, copied into `~/.codex/prompts/`), `AGENTS.md`, and
+`.codex/hooks.json`. Two runtime behaviours are pending verification before it is on par with the
+other two — autonomous isolated sub-agent spawning, and the `apply_patch` hook payload — see
+`.codex/README.md` and `.codex/VERIFICATION.md`.
 
 ### File-count asymmetry (28 Copilot agents vs 8 Claude subagents — intentional)
 
@@ -574,10 +581,10 @@ on every interaction while adding zero capability.
 
 Rules for contributors:
 1. Never put substantive procedure in an adapter file — put it in the runbook and reference it.
-2. When adding a command: runbook → extension.yml → Copilot agent + prompt → Claude command → README tables.
+2. When adding a command: runbook → extension.yml → Copilot agent + prompt → Claude command → Codex prompt → README tables.
 3. When editing a skill: edit `.github/skills/<name>/SKILL.md`, then copy to `.claude/skills/<name>/SKILL.md` (they must stay byte-identical; `/dev.lint-wiki` checks this).
 
-Slash syntax differs by runtime: `/dev.analyze` (Copilot) ≡ `/dev:analyze` (Claude Code). Docs use the Copilot form; the mapping is mechanical.
+Slash syntax differs by runtime: `/dev.analyze` (Copilot and Codex) ≡ `/dev:analyze` (Claude Code). Docs use the Copilot form; the mapping is mechanical.
 
 ### Token economy
 
@@ -663,7 +670,7 @@ Agent versions logged in `wiki/log.md` on each update; rollback by reverting the
 
 ### 17.1 Invocation cheatsheet
 
-| Goal | Invocation (Copilot / Claude Code) |
+| Goal | Invocation (Copilot & Codex / Claude Code) |
 |------|-----------------------------------|
 | Build anything, one command | `/dev.feature <target> "<desc>"` / `/dev:feature <target> "<desc>"` (empty target → greenfield mode) |
 | Register a project | `/dev.target register <path> [--new]` / `/dev:target register <path> [--new]` |

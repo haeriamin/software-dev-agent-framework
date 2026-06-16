@@ -3,9 +3,9 @@
 Give one request. Get back a finished, reviewed feature on a branch that only you can merge.
 Works on any codebase, any language. Every change is linked to a rule, tested, and easy to undo.
 
-It is a spec-driven, multi-agent setup for **GitHub Copilot** and **Claude Code**, built on
-[spec-kit](https://github.com/github/spec-kit). Your code stays where it is. The framework
-holds the process and the shared knowledge.
+It is a spec-driven, multi-agent setup for **GitHub Copilot**, **Claude Code**, and **Codex**
+(preview), built on [spec-kit](https://github.com/github/spec-kit). Your code stays where it is.
+The framework holds the process and the shared knowledge.
 
 ```bash
 /dev.target register path/to/my-app
@@ -29,7 +29,7 @@ holds the process and the shared knowledge.
 - **Knowledge is saved and reused.** Your standards, code examples, and past decisions live
   in a shared wiki. Later work starts from what earlier work learned.
 - **No setup needed.** Just markdown files and a few scripts. No servers, no build step.
-  Clone it and the Copilot/Claude files load on their own.
+  Clone it and the Copilot / Claude Code / Codex files load on their own.
 - **Light on context.** About 50 lines load every turn. Everything else loads only when used.
 
 ## For teams
