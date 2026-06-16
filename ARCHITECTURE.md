@@ -1,4 +1,4 @@
-# Software Development Agent Framework
+# Throughline
 ## Architecture & Implementation Guide (SDD-native)
 
 > Canonical patterns: [spec-kit](https://github.com/github/spec-kit) for the SDD lifecycle, [Kumo Coding Agent](https://github.com/kumo-ai/kumo-coding-agent) for multi-agent topology. Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), and the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML). All three runtimes execute identical canonical runbooks.

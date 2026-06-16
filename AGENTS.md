@@ -1,4 +1,4 @@
-# Software Development Agent Framework — Codex CLI instructions
+# Throughline — Codex CLI instructions
 
 Standalone, spec-driven, multi-agent development platform. **The constitution at
 `.specify/memory/constitution.md` is supreme law**; these rules are operational refinements.

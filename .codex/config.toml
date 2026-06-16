@@ -1,4 +1,4 @@
-# Project-level Codex CLI config for the Software Development Agent Framework.
+# Project-level Codex CLI config for Throughline.
 # Codex reads <repo>/.codex/config.toml and <repo>/.codex/hooks.json (when the .codex layer is
 # trusted — run `/hooks` once to trust). General settings live in ~/.codex/config.toml.
 

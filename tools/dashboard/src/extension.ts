@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext): void {
     if (m) {
       const escalated = m.stats().escalated;
       statusBar.text = escalated > 0 ? `$(warning) SDD: ${escalated} escalated` : "$(shield) SDD";
-      statusBar.tooltip = "Software Development Agent Framework — open dashboard";
+      statusBar.tooltip = "Throughline — open dashboard";
       statusBar.backgroundColor =
         escalated > 0 ? new vscode.ThemeColor("statusBarItem.warningBackground") : undefined;
       statusBar.show();

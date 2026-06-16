@@ -1,7 +1,7 @@
 {
   "name": "sdd-dashboard",
-  "displayName": "SDD Agent Framework Dashboard",
-  "description": "Live dashboard for the Software Development Agent Framework: targets, slice lifecycle, work queue, review verdicts, escalations, and the operations log.",
+  "displayName": "Throughline Dashboard",
+  "description": "Live dashboard for Throughline: targets, slice lifecycle, work queue, review verdicts, escalations, and the operations log.",
   "version": "0.1.0",
   "publisher": "sdd-framework",
   "license": "MIT",
@@ -21,7 +21,7 @@
       "activitybar": [
         {
           "id": "sdd-dashboard",
-          "title": "SDD Dashboard",
+          "title": "Throughline Dashboard",
           "icon": "media/icon.svg"
         }
       ]
@@ -61,7 +61,7 @@
       ]
     },
     "configuration": {
-      "title": "SDD Dashboard",
+      "title": "Throughline Dashboard",
       "properties": {
         "sddDashboard.frameworkRoot": {
           "type": "string",

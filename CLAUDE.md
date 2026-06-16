@@ -1,4 +1,4 @@
-# Software Development Agent Framework — Claude Code Instructions
+# Throughline — Claude Code Instructions
 
 Standalone, spec-driven, multi-agent development platform. **The constitution at `.specify/memory/constitution.md` is supreme law**; these rules are operational refinements. Slash syntax here is `/dev:analyze` (docs elsewhere write the Copilot form `/dev.analyze` — mapping is mechanical).
 

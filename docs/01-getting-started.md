@@ -2,18 +2,20 @@
 
 ## Prerequisites
 
-- **VS Code with GitHub Copilot**, or **Claude Code** (CLI or desktop) — the framework is
-  fully wired for both; pick either or use both.
+- **VS Code with GitHub Copilot**, **Claude Code** (CLI or desktop), or **OpenAI Codex**
+  (preview) — the framework is wired for all three; pick any. Per-host setup + usage:
+  [docs/runtimes/](runtimes/).
 - **git** — for the framework repo and for reversible changes on targets.
 - **Node.js 20+** — only if you want to build the [dashboard extension](07-dashboard.md).
 
 ## Install
 
 ```bash
-git clone <repo-url> software-dev-agent-framework
-cd software-dev-agent-framework
+git clone <repo-url> throughline
+cd throughline
 # Copilot: open the folder in VS Code — .github/ assets load automatically.
 # Claude Code: run `claude` in the folder — CLAUDE.md and .claude/ assets load automatically.
+# Codex (preview): run `codex` in the folder, then /hooks to trust; copy .codex/prompts/*.md to ~/.codex/prompts/.
 ```
 
 No build step. No services. The repo's markdown files *are* the framework.
@@ -26,8 +28,10 @@ The two runtimes spell commands differently — same commands, same behavior:
 |---------|--------|
 | GitHub Copilot | `/dev.analyze`, `/speckit.specify` |
 | Claude Code | `/dev:analyze`, `/speckit:specify` |
+| Codex (preview) | `/dev.analyze`, `/speckit.specify` |
 
-Docs use the Copilot form. The mapping is mechanical.
+Docs use the Copilot form. The mapping is mechanical. Full per-host walkthroughs:
+[docs/runtimes/](runtimes/).
 
 ## First run (one time)
 

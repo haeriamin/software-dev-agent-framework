@@ -1,4 +1,4 @@
-# Software Development Agent Framework — Global Copilot Instructions
+# Throughline — Global Copilot Instructions
 
 Standalone, spec-driven, multi-agent development platform built on [spec-kit](https://github.com/github/spec-kit). **The constitution at `.specify/memory/constitution.md` is supreme law**; these rules are operational refinements.
 

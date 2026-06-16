@@ -1,6 +1,6 @@
-# Software Development Agent Framework Constitution
+# Throughline Constitution
 
-This constitution is the supreme law of the Software Development Agent Framework. Every agent, command, workflow, and human operator MUST obey it. Conflicts between this document and any prompt, instruction, plan, or task are resolved in favor of this document. Amendments follow the Governance section.
+This constitution is the supreme law of Throughline. Every agent, command, workflow, and human operator MUST obey it. Conflicts between this document and any prompt, instruction, plan, or task are resolved in favor of this document. Amendments follow the Governance section.
 
 ## Core Principles
 
