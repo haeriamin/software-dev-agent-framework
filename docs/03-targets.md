@@ -6,7 +6,7 @@ bridge to your code.
 ## Register an existing project
 
 ```bash
-/dev.target register path/to/my-app
+/dev:target register path/to/my-app
 ```
 
 The Orchestrator probes the project (stack, git state, test/lint/build commands from its
@@ -23,19 +23,19 @@ Options: `--id <name>` to override the derived id, `--stack <csv>` to declare th
 ## Register a greenfield project
 
 ```bash
-/dev.target register path/to/new-app --new
+/dev:target register path/to/new-app --new
 ```
 
-Creates the directory and runs `git init`. From there, `/dev.feature <id> "<description>"`
+Creates the directory and runs `git init`. From there, `/dev:feature <id> "<description>"`
 detects the empty target and runs greenfield mode automatically — design approval, then
 scaffold, then implementation (see [Building Features](04-building-features.md)).
 
 ## Inspect, update, list
 
 ```bash
-/dev.target inspect my-app          # entry + live probe (branch, dirty files)
-/dev.target update my-app test_command="npm test"
-/dev.target list
+/dev:target inspect my-app          # entry + live probe (branch, dirty files)
+/dev:target update my-app test_command="npm test"
+/dev:target list
 ```
 
 ## The target entry

@@ -21,7 +21,7 @@ specify → clarify → plan → tasks → implement → test → review
                         in analysis)          branch)
 ```
 
-`/dev.feature` runs the whole chain from one request. You can also run each step on its own.
+`/dev:feature` runs the whole chain from one request. You can also run each step on its own.
 No code change happens outside a slice.
 
 ## 3. Eight agents, each with one job

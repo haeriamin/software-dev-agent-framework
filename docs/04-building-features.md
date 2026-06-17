@@ -5,8 +5,8 @@ Three ways to build, from hands-off to hands-on.
 ## A. One command (recommended)
 
 ```bash
-/dev.feature my-app "Add cursor pagination to the orders endpoint"  # existing codebase
-/dev.feature new-app "A CLI tool that converts CSV to Parquet"      # empty target → greenfield mode
+/dev:feature my-app "Add cursor pagination to the orders endpoint"  # existing codebase
+/dev:feature new-app "A CLI tool that converts CSV to Parquet"      # empty target → greenfield mode
 ```
 
 The Orchestrator drives the whole lifecycle and returns a reviewed, merge-ready branch.
@@ -36,12 +36,12 @@ first missing artifact.
 Full control at every step:
 
 ```bash
-/speckit.specify "Add cursor pagination to my-app's orders endpoint"   # → specs/NNN-*/spec.md
-/speckit.clarify                                       # resolve [NEEDS CLARIFICATION]
-/speckit.plan        # → plan.md, grounded in /dev.analyze's report
-/dev.design          # only if HIGH/CRITICAL — design.md + ADRs, you approve
-/speckit.tasks       # → tasks.md (atomic, each task cites FR + standard)
-/speckit.implement   # → /dev.implement → /dev.test → /dev.review
+/speckit:specify "Add cursor pagination to my-app's orders endpoint"   # → specs/NNN-*/spec.md
+/speckit:clarify                                       # resolve [NEEDS CLARIFICATION]
+/speckit:plan        # → plan.md, grounded in /dev:analyze's report
+/dev:design          # only if HIGH/CRITICAL — design.md + ADRs, you approve
+/speckit:tasks       # → tasks.md (atomic, each task cites FR + standard)
+/speckit:implement   # → /dev:implement → /dev:test → /dev:review
 ```
 
 What to check at each artifact:
@@ -53,37 +53,37 @@ What to check at each artifact:
 
 ## C. Greenfield project
 
-The short way — register, then let `/dev.feature` detect the empty target:
+The short way — register, then let `/dev:feature` detect the empty target:
 
 ```bash
-/dev.target register path/to/new-app --new
-/dev.feature new-app "A CLI tool that converts CSV to Parquet"
+/dev:target register path/to/new-app --new
+/dev:feature new-app "A CLI tool that converts CSV to Parquet"
 ```
 
 Or phase by phase, if you want to drive each step:
 
 ```bash
-/speckit.specify "A CLI tool that ..."
-/speckit.clarify && /speckit.plan
-/dev.design          # mandatory for greenfield: stack + layout are ADRs you approve
-/speckit.tasks
-/dev.scaffold        # skeleton with test/lint commands verified GREEN before any feature code
-/speckit.implement
+/speckit:specify "A CLI tool that ..."
+/speckit:clarify && /speckit:plan
+/dev:design          # mandatory for greenfield: stack + layout are ADRs you approve
+/speckit:tasks
+/dev:scaffold        # skeleton with test/lint commands verified GREEN before any feature code
+/speckit:implement
 ```
 
 ## Before a slice: ideate
 
-Not sure what to build yet? `/dev.ideate "<rough idea>" my-app` thinks it through with you — a few distinct approaches with their trade-offs and risks, grounded in your code — and recommends a direction. It's read-only: it writes an ideation note and builds nothing. When you've chosen, start a slice with `/dev.feature` (or `/speckit.specify`).
+Not sure what to build yet? `/dev:ideate "<rough idea>" my-app` thinks it through with you — a few distinct approaches with their trade-offs and risks, grounded in your code — and recommends a direction. It's read-only: it writes an ideation note and builds nothing. When you've chosen, start a slice with `/dev:feature` (or `/speckit:specify`).
 
 ## Out-of-band (no slice)
 
 For quick questions and checks, commands work standalone:
 
 ```bash
-/dev.ideate "<rough idea>" my-app    # brainstorm options before committing to a spec
-/dev.analyze my-app src/services     # what's in there, conventions, risks
-/dev.review <slice-id>               # re-run the gate on a past slice
-/dev.audit                           # portfolio health
+/dev:ideate "<rough idea>" my-app    # brainstorm options before committing to a spec
+/dev:analyze my-app src/services     # what's in there, conventions, risks
+/dev:review <slice-id>               # re-run the gate on a past slice
+/dev:audit                           # portfolio health
 ```
 
 ---

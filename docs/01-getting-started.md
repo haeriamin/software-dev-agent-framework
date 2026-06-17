@@ -30,19 +30,19 @@ The three runtimes spell commands differently — same commands, same behavior:
 
 | Runtime | Syntax |
 |---------|--------|
-| GitHub Copilot | `/dev.analyze`, `/speckit.specify` |
 | Claude Code | `/dev:analyze`, `/speckit:specify` |
+| GitHub Copilot | `/dev.analyze`, `/speckit.specify` |
 | Codex (preview) | `/dev.analyze`, `/speckit.specify` |
 
-Docs use the Copilot form. The mapping is mechanical. Full per-host walkthroughs:
+Docs use the Claude Code colon form. The mapping is mechanical. Full per-host walkthroughs:
 [docs/runtimes/](runtimes/).
 
 ## First run (one time)
 
 ```bash
-/speckit.constitution        # 1. review the framework's law; fill the Ratified date
-/dev.ingest-standards        # 2. compile /standards/ into the wiki
-/dev.ingest-exemplars        # 3. compile /exemplars/ into the pattern library
+/speckit:constitution        # 1. review the framework's law; fill the Ratified date
+/dev:ingest-standards        # 2. compile /standards/ into the wiki
+/dev:ingest-exemplars        # 3. compile /exemplars/ into the pattern library
 ```
 
 The shipped `/standards/` and `/exemplars/` are **replaceable seeds** — swap in your
@@ -51,8 +51,8 @@ team's own and re-run the ingests (see [Knowledge Base](05-knowledge-base.md)).
 ## Your first feature
 
 ```bash
-/dev.target register path/to/my-app          # register the codebase you want to work on
-/dev.feature my-app "Add cursor pagination to the orders endpoint"
+/dev:target register path/to/my-app          # register the codebase you want to work on
+/dev:feature my-app "Add cursor pagination to the orders endpoint"
 ```
 
 That's the whole loop. Details: [Managing Targets](03-targets.md) and
@@ -63,8 +63,8 @@ That's the whole loop. Details: [Managing Targets](03-targets.md) and
 Start small:
 
 1. **Knowledge only** — swap in your seeds, ingest, use the skills ad hoc in chat.
-2. **Out-of-band** — `/dev.analyze`, `/dev.test`, `/dev.review` on a target, no specs.
-3. **Full lifecycle** — `/dev.feature` when a change warrants traceability. Heavy machinery
+2. **Out-of-band** — `/dev:analyze`, `/dev:test`, `/dev:review` on a target, no specs.
+3. **Full lifecycle** — `/dev:feature` when a change warrants traceability. Heavy machinery
    (design ADRs, human-led mode) engages only at HIGH/CRITICAL.
 
 Solo dev? Relax the thresholds — a one-file [amendment](08-customization.md).

@@ -14,7 +14,7 @@ Pick **8–10 real tasks** of different sizes from your backlog. Build each one 
 throwaway branches:
 
 - **Plain** — plain Copilot or Claude Code, the way you normally work.
-- **Framework** — `/dev.feature <target> "<task>"`.
+- **Framework** — `/dev:feature <target> "<task>"`.
 
 For each task, write down:
 
@@ -41,7 +41,7 @@ For each task, write down:
 ## Test the "it builds up over time" claim
 
 Run 3 or more similar projects one after another. Between them, add examples and record your
-decisions (`/dev.ingest-exemplars`, `/dev.review-escalated`). Track how often you had to step
+decisions (`/dev:ingest-exemplars`, `/dev:review-escalated`). Track how often you had to step
 in, per project. A falling number means it is building up as promised. A flat number means
 your examples are not paying off yet — which is also useful to know.
 

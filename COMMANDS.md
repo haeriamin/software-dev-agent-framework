@@ -3,8 +3,9 @@
 Every command available in the framework, for new users and agents. Canonical procedure
 for each `/dev.*` command lives in `.specify/extensions/dev/commands/<command>.md`.
 
-**Slash syntax**: GitHub Copilot and Codex use dots (`/dev.analyze`); Claude Code uses colons
-(`/dev:analyze`). This file writes the dot form — the mapping is mechanical.
+**Slash syntax**: this file writes the **Claude Code colon form** (`/dev:analyze`), the default
+across the docs. GitHub Copilot and Codex use the dot form (`/dev.analyze`) — the mapping is
+mechanical.
 
 ---
 
@@ -12,53 +13,53 @@ for each `/dev.*` command lives in `.specify/extensions/dev/commands/<command>.m
 
 | Command | Arguments | What happens |
 |---------|-----------|--------------|
-| `/dev.feature` | `<target-id> "<description>" [--express] [--micro] [--audit]` | Runs the entire lifecycle from one request: specify → clarify → plan (+analysis) → design if HIGH → tasks → implement → test → review. **Empty target → greenfield mode**: design becomes mandatory and `/dev.scaffold` runs before implement. Pauses only at constitutional gates; resumes idempotently if re-run. `--express` skips the optional spec/plan gates (LOW/MEDIUM). `--micro` collapses to implement→test→review for a genuinely small LOW change (no contract/schema/security surface) — keeps the gates, drops the planning paperwork. |
+| `/dev:feature` | `<target-id> "<description>" [--express] [--micro] [--audit]` | Runs the entire lifecycle from one request: specify → clarify → plan (+analysis) → design if HIGH → tasks → implement → test → review. **Empty target → greenfield mode**: design becomes mandatory and `/dev:scaffold` runs before implement. Pauses only at constitutional gates; resumes idempotently if re-run. `--express` skips the optional spec/plan gates (LOW/MEDIUM). `--micro` collapses to implement→test→review for a genuinely small LOW change (no contract/schema/security surface) — keeps the gates, drops the planning paperwork. |
 
 New to the framework? Register a target, then run this:
 
 ```
-/dev.target register path/to/my-app            # existing codebase
-/dev.feature my-app "Add cursor pagination to the orders endpoint"
+/dev:target register path/to/my-app            # existing codebase
+/dev:feature my-app "Add cursor pagination to the orders endpoint"
 
-/dev.target register path/to/new-app --new     # brand-new project
-/dev.feature new-app "A CLI tool that converts CSV to Parquet"
+/dev:target register path/to/new-app --new     # brand-new project
+/dev:feature new-app "A CLI tool that converts CSV to Parquet"
 ```
 
 ---
 
 ## Lifecycle Commands (speckit core)
 
-Run individually when you want phase-by-phase control instead of `/dev.feature`.
+Run individually when you want phase-by-phase control instead of `/dev:feature`.
 
 | Command | Arguments | Produces | Notes |
 |---------|-----------|----------|-------|
-| `/speckit.constitution` | `[amendment]` | Amended `.specify/memory/constitution.md` | Human approval + version bump required |
-| `/speckit.specify` | `"<description incl. target>"` | `specs/NNN-*/spec.md` | WHAT + WHY; records the Target; max 3 `[NEEDS CLARIFICATION]` |
-| `/speckit.clarify` | — | Resolved markers in spec.md | Max 3 questions per run; waits for your answers |
-| `/speckit.plan` | `[context]` | `specs/NNN-*/plan.md` | `before_plan` hook runs `/dev.analyze`; HIGH/CRITICAL requires `/dev.design` |
-| `/speckit.tasks` | — | `specs/NNN-*/tasks.md` | Atomic, dependency-ordered; every task cites FR + standard |
-| `/speckit.implement` | — | Implemented slice on branch `sdd/<slice>` | Chains `/dev.implement` → `/dev.test` → `/dev.review` (mandatory) |
-| `/speckit.analyze` | — | Consistency-matrix report | Cross-artifact check; routes findings to the owning phase |
-| `/speckit.checklist` | `[requirements\|design\|implementation\|release]` | `specs/NNN-*/checklists/<type>.md` | Verifies; never modifies artifacts |
+| `/speckit:constitution` | `[amendment]` | Amended `.specify/memory/constitution.md` | Human approval + version bump required |
+| `/speckit:specify` | `"<description incl. target>"` | `specs/NNN-*/spec.md` | WHAT + WHY; records the Target; max 3 `[NEEDS CLARIFICATION]` |
+| `/speckit:clarify` | — | Resolved markers in spec.md | Max 3 questions per run; waits for your answers |
+| `/speckit:plan` | `[context]` | `specs/NNN-*/plan.md` | `before_plan` hook runs `/dev:analyze`; HIGH/CRITICAL requires `/dev:design` |
+| `/speckit:tasks` | — | `specs/NNN-*/tasks.md` | Atomic, dependency-ordered; every task cites FR + standard |
+| `/speckit:implement` | — | Implemented slice on branch `sdd/<slice>` | Chains `/dev:implement` → `/dev:test` → `/dev:review` (mandatory) |
+| `/speckit:analyze` | — | Consistency-matrix report | Cross-artifact check; routes findings to the owning phase |
+| `/speckit:checklist` | `[requirements\|design\|implementation\|release]` | `specs/NNN-*/checklists/<type>.md` | Verifies; never modifies artifacts |
 
 ## Dev Commands (extension)
 
 | Command | Persona | Arguments | Writes |
 |---------|---------|-----------|--------|
-| `/dev.feature` | Orchestrator | `<target-id> "<desc>" [--express] [--micro] [--audit]` | Drives all phase commands (greenfield auto-detected: +design +scaffold; `--micro` collapses to implement→test→review); queue state; log |
-| `/dev.target` | Orchestrator | `register <path> [--id <id>] [--new]` · `inspect <id>` · `update <id> <k>=<v>` · `list` | `targets/<id>.yml`, `<id>.code-workspace`, Claude `settings.local.json` access |
-| `/dev.ingest-standards` | Archivist | — | `wiki/standards-summary.md` (+ concepts, index, log) |
-| `/dev.ingest-exemplars` | Archivist | — | `wiki/pattern-library.md` (+ concepts, index, log) |
-| `/dev.ideate` | Analyst | `"<rough idea>" [target-id]` | `work-queue/pending/<topic>-ideation.md` — read-only brainstorming before any spec; explores options/trade-offs/risks, recommends a direction, builds nothing |
-| `/dev.analyze` | Analyst | `<target-id> [scope]` | `work-queue/in-progress/<slice>-analysis.md` |
-| `/dev.design` | Architect | `<slice-id>` | `specs/NNN-*/design.md` + ADR index entries (required for HIGH/CRITICAL) |
-| `/dev.scaffold` | Implementer | `<slice-id>` | Greenfield skeleton at the target with verified-green test/lint loop |
-| `/dev.implement` | Implementer | `<slice-id>` | Target source on `sdd/<slice>` + Decision Records per task + `<target>/.throughline/CHANGELOG.md` entry |
-| `/dev.test` | Tester | `<slice-id>` | Target test files + `review-reports/<target>/<slice>-tests.md` (real execution evidence) |
-| `/dev.review` | Reviewer | `<slice-id>` | `review-reports/<target>/<slice>-review.md` — PASS / CONDITIONAL_PASS / FAIL |
-| `/dev.audit` | Auditor | `[target-id]` | `review-reports/portfolio-summary.md` + `recommendations.md` |
-| `/dev.lint-wiki` | Archivist | `[--write]` | Findings table (links, staleness, citation + skill parity, log integrity, concept-page scope) |
-| `/dev.review-escalated` | Orchestrator + human | — | `wiki/exception-registry.md` entries + queue moves; waits for your decisions |
+| `/dev:feature` | Orchestrator | `<target-id> "<desc>" [--express] [--micro] [--audit]` | Drives all phase commands (greenfield auto-detected: +design +scaffold; `--micro` collapses to implement→test→review); queue state; log |
+| `/dev:target` | Orchestrator | `register <path> [--id <id>] [--new]` · `inspect <id>` · `update <id> <k>=<v>` · `list` | `targets/<id>.yml`, `<id>.code-workspace`, Claude `settings.local.json` access |
+| `/dev:ingest-standards` | Archivist | — | `wiki/standards-summary.md` (+ concepts, index, log) |
+| `/dev:ingest-exemplars` | Archivist | — | `wiki/pattern-library.md` (+ concepts, index, log) |
+| `/dev:ideate` | Analyst | `"<rough idea>" [target-id]` | `work-queue/pending/<topic>-ideation.md` — read-only brainstorming before any spec; explores options/trade-offs/risks, recommends a direction, builds nothing |
+| `/dev:analyze` | Analyst | `<target-id> [scope]` | `work-queue/in-progress/<slice>-analysis.md` |
+| `/dev:design` | Architect | `<slice-id>` | `specs/NNN-*/design.md` + ADR index entries (required for HIGH/CRITICAL) |
+| `/dev:scaffold` | Implementer | `<slice-id>` | Greenfield skeleton at the target with verified-green test/lint loop |
+| `/dev:implement` | Implementer | `<slice-id>` | Target source on `sdd/<slice>` + Decision Records per task + `<target>/.throughline/CHANGELOG.md` entry |
+| `/dev:test` | Tester | `<slice-id>` | Target test files + `review-reports/<target>/<slice>-tests.md` (real execution evidence) |
+| `/dev:review` | Reviewer | `<slice-id>` | `review-reports/<target>/<slice>-review.md` — PASS / CONDITIONAL_PASS / FAIL |
+| `/dev:audit` | Auditor | `[target-id]` | `review-reports/portfolio-summary.md` + `recommendations.md` |
+| `/dev:lint-wiki` | Archivist | `[--write]` | Findings table (links, staleness, citation + skill parity, log integrity, concept-page scope) |
+| `/dev:review-escalated` | Orchestrator + human | — | `wiki/exception-registry.md` entries + queue moves; waits for your decisions |
 
 ---
 
@@ -111,9 +112,9 @@ The full process is many model steps. Match the effort to the risk:
 
 | Option | Use when | What it does |
 |--------|----------|--------------|
-| `/dev.feature --micro` | Small, low-risk change; no API or security part | implement → test → review only; skips spec/plan/design/tasks |
-| `/dev.feature --express` | Low/medium risk, you trust the plan | Skips the two approval pauses |
-| Single commands (`/dev.analyze`, `/dev.review`) | Quick check, no full task | One step, no full process |
+| `/dev:feature --micro` | Small, low-risk change; no API or security part | implement → test → review only; skips spec/plan/design/tasks |
+| `/dev:feature --express` | Low/medium risk, you trust the plan | Skips the two approval pauses |
+| Single commands (`/dev:analyze`, `/dev:review`) | Quick check, no full task | One step, no full process |
 | Reusing reads (automatic) | Any multi-step task | Later steps read the task's own analysis + plan, not the whole wiki again |
 | Plain Copilot/Claude Code | You don't need the checks | Cheapest — skip the framework |
 
@@ -125,9 +126,9 @@ not worth it for throwaway code — use the cheap options above there.
 ## Typical Flows
 
 ```
-First-time setup     /speckit.constitution → /dev.ingest-standards → /dev.ingest-exemplars
-Add a feature        /dev.target register <path> → /dev.feature <id> "<description>"
-Greenfield project   /dev.target register <path> --new → /dev.feature <id> "<description>"
-Phase-by-phase       /speckit.specify → clarify → plan → [/dev.design] → tasks → [/dev.scaffold] → implement
-Maintenance          /dev.audit → /dev.review-escalated → /dev.lint-wiki
+First-time setup     /speckit:constitution → /dev:ingest-standards → /dev:ingest-exemplars
+Add a feature        /dev:target register <path> → /dev:feature <id> "<description>"
+Greenfield project   /dev:target register <path> --new → /dev:feature <id> "<description>"
+Phase-by-phase       /speckit:specify → clarify → plan → [/dev:design] → tasks → [/dev:scaffold] → implement
+Maintenance          /dev:audit → /dev:review-escalated → /dev:lint-wiki
 ```

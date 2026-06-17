@@ -44,7 +44,7 @@ anything sits in `work-queue/escalated/`. Click it to open the dashboard.
 | `sddDashboard.logTail` | 15 | Operations-log entries shown on the dashboard |
 
 Auto-detection means the dashboard works both in the framework repo itself and in the
-multi-root `targets/<id>.code-workspace` files that `/dev.target` generates.
+multi-root `targets/<id>.code-workspace` files that `/dev:target` generates.
 
 ---
 [← Quality Gates](06-quality-gates.md) · Next: [Customization →](08-customization.md)

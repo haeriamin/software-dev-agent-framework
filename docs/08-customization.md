@@ -14,7 +14,7 @@ Thresholds, formula weights, principles, and write boundaries live in
 mirrors. To change one:
 
 ```bash
-/speckit.constitution "Lower the PASS threshold to 0.80"
+/speckit:constitution "Lower the PASS threshold to 0.80"
 ```
 
 The agent drafts the diff, waits for your explicit approval, bumps the version
@@ -36,7 +36,7 @@ per-command Claude subagent — commands adopt one of the 8 personas
 ## Add or edit a skill
 
 Edit `.github/skills/<name>/SKILL.md`, copy it byte-identical to
-`.claude/skills/<name>/SKILL.md`. CI and `/dev.lint-wiki` both fail on drift.
+`.claude/skills/<name>/SKILL.md`. CI and `/dev:lint-wiki` both fail on drift.
 
 ## Runtime config
 

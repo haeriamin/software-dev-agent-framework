@@ -38,7 +38,7 @@ so you can see exactly what pulled it down.
 On FAIL, the review lists each problem (with the `file:line` and the rule) and sends it back
 to the Implementer. **At most 2 retries**, then it goes to a human. The loop cannot run forever.
 
-## Asking the human (`/dev.review-escalated`)
+## Asking the human (`/dev:review-escalated`)
 
 When an agent is not confident enough, it writes a short file to `work-queue/escalated/`: what
 is done, what is blocked, the exact question(s) for you, the options with their trade-offs, and

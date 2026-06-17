@@ -34,8 +34,8 @@ Good code (`good/`) and bad code to avoid (`anti-patterns/`). Each code file nee
 After you change anything in the sources, run:
 
 ```bash
-/dev.ingest-standards    # rebuilds the rules summary; flags past work that used a changed rule
-/dev.ingest-exemplars    # rebuilds the example list
+/dev:ingest-standards    # rebuilds the rules summary; flags past work that used a changed rule
+/dev:ingest-exemplars    # rebuilds the example list
 ```
 
 ## The wiki
@@ -58,10 +58,10 @@ not rely on the scope mark, because the shared lists and log would still mix the
 ## Keeping it healthy
 
 ```bash
-/dev.lint-wiki    # checks for broken links, stale summaries, bad citations, and more
+/dev:lint-wiki    # checks for broken links, stale summaries, bad citations, and more
 ```
 
-The Auditor (`/dev.audit`) points out **missing examples** — a kind of code the agents needed
+The Auditor (`/dev:audit`) points out **missing examples** — a kind of code the agents needed
 3+ times but have no good example for. Adding that example (then re-loading) raises the
 confidence on the next task that needs it.
 

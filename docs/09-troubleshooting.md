@@ -19,8 +19,8 @@ there yourself, then run the matching ingest command.
 - **Copilot**: open `targets/<id>.code-workspace`, not the framework folder alone — the
   target must be a workspace folder.
 - **Claude Code**: the target path must be in `permissions.additionalDirectories` in
-  `.claude/settings.local.json` — `/dev.target register` adds it; re-run
-  `/dev.target inspect <id>` to verify.
+  `.claude/settings.local.json` — `/dev:target register` adds it; re-run
+  `/dev:target inspect <id>` to verify.
 
 ## Hooks on macOS/Linux
 
@@ -30,19 +30,19 @@ Swap each command for its `.sh` sibling per `.claude/hooks/README.md` and
 
 ## "Analysis is stale" / fingerprint mismatch
 
-The target changed since `/dev.analyze` ran. Re-run it — plans and reviews refuse to
+The target changed since `/dev:analyze` ran. Re-run it — plans and reviews refuse to
 build on stale maps by design.
 
 ## Reviewer keeps FAILing a slice
 
 Read the sub-scores in the review report:
 
-- `test_evidence` low → the test report is missing, stale, or behaviors are uncovered — run `/dev.test`
+- `test_evidence` low → the test report is missing, stale, or behaviors are uncovered — run `/dev:test`
 - `standards_compliance` low → itemized findings list the exact clauses and `file:line`
 - `spec_alignment` low → requirements unimplemented or out-of-scope drift
 
 After 2 retries it escalates — answer the escalation's questions via
-`/dev.review-escalated` instead of re-running blindly.
+`/dev:review-escalated` instead of re-running blindly.
 
 ## Dashboard says "No framework root found"
 
@@ -60,7 +60,7 @@ Open a workspace containing `.specify/memory/constitution.md`, or set
 
 ## Wiki feels wrong
 
-`/dev.lint-wiki` pinpoints it: broken links, stale summaries (re-ingest), citation
+`/dev:lint-wiki` pinpoints it: broken links, stale summaries (re-ingest), citation
 integrity, scope integrity, log-format violations. Remediation always goes through the
 ingest commands or human edits — never hand-patch derived files.
 

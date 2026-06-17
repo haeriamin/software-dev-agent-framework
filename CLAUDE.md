@@ -1,6 +1,6 @@
 # Throughline — Claude Code Instructions
 
-Standalone, spec-driven, multi-agent development platform. **The constitution at `.specify/memory/constitution.md` is supreme law**; these rules are operational refinements. Slash syntax here is `/dev:analyze` (docs elsewhere write the Copilot form `/dev.analyze` — mapping is mechanical).
+Standalone, spec-driven, multi-agent development platform. **The constitution at `.specify/memory/constitution.md` is supreme law**; these rules are operational refinements. Slash syntax here is `/dev:analyze` — the colon form the docs default to; Copilot and Codex use the dot form `/dev.analyze` (mapping is mechanical).
 
 ## Non-Negotiables
 

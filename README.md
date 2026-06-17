@@ -5,8 +5,8 @@
 You describe a change. Throughline turns it into a tested, independently reviewed feature on a branch that only you can merge, using the AI coding tool you already have (GitHub Copilot, Claude Code, or Codex). Your code stays where it is; the framework holds the process, your standards, and the shared memory. It works on any codebase, in any language.
 
 ```bash
-/dev.target register path/to/my-app
-/dev.feature my-app "Add cursor pagination to the orders endpoint"
+/dev:target register path/to/my-app
+/dev:feature my-app "Add cursor pagination to the orders endpoint"
 # spec -> plan -> tasks -> implement -> tests -> review -> branch sdd/<slice>.   You do the merge.
 ```
 
@@ -22,9 +22,9 @@ Throughline is a spec-driven, multi-agent layer that sits on top of [spec-kit](h
 
 Throughline pays for its overhead on changes you want tested, reviewed, and recorded. Match the task to the command:
 
-- **Build a feature or fix a bug** with `/dev.feature my-app "..."` (add `--micro` for a small fix). The bug-fix path is what the [SWE-bench run](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) used on a real pytest issue.
-- **Understand an area before changing it** with `/dev.analyze my-app src/billing`, which maps the code and the conventions it actually follows.
-- **Review a change** on its own with `/dev.review <slice-id>`.
+- **Build a feature or fix a bug** with `/dev:feature my-app "..."` (add `--micro` for a small fix). The bug-fix path is what the [SWE-bench run](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) used on a real pytest issue.
+- **Understand an area before changing it** with `/dev:analyze my-app src/billing`, which maps the code and the conventions it actually follows.
+- **Review a change** on its own with `/dev:review <slice-id>`.
 
 What it's *not* for: a quick "what does this function do?" or a throwaway script doesn't need a test, a review, or a record. There, just ask your AI tool in plain chat. The rule of thumb is simple: a change goes through Throughline, a question goes to plain chat.
 
@@ -88,12 +88,12 @@ So on any of the three tools, on Windows/macOS/Linux: clone, run the one-time `t
 
 ### Pick your tool
 
-Throughline is the same framework behind three thin adapters. Use whichever tool you already have; the commands are identical and only the slash punctuation changes.
+Throughline is the same framework behind three thin adapters. Use whichever tool you already have; the commands are identical and only the slash punctuation changes. **These docs default to the Claude Code colon form** (`/dev:feature`); Copilot and Codex use a dot (`/dev.feature`).
 
 | Tool | Slash syntax | Status | Guide |
 |------|--------------|--------|-------|
-| GitHub Copilot (VS Code) | `/dev.feature` | Supported | [docs/runtimes/copilot.md](docs/runtimes/copilot.md) |
 | Claude Code | `/dev:feature` | Supported | [docs/runtimes/claude-code.md](docs/runtimes/claude-code.md) |
+| GitHub Copilot (VS Code) | `/dev.feature` | Supported | [docs/runtimes/copilot.md](docs/runtimes/copilot.md) |
 | Codex | `/dev.feature` | Preview | [docs/runtimes/codex.md](docs/runtimes/codex.md) |
 
 Start here for the overview and a comparison: [docs/runtimes/](docs/runtimes/).
@@ -105,18 +105,18 @@ git clone <repo-url> && cd throughline
 powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows  ┐ one-time: wire the
 bash tools/setup-hooks.sh                                        # mac/Linux ┘ write-safety hooks
 # open in VS Code (Copilot), or run `claude` (Claude Code), or `codex` (Codex)
-/speckit.constitution && /dev.ingest-standards && /dev.ingest-exemplars   # one-time: load the rules
-/dev.target register path/to/my-app                                       # point at your code
-/dev.feature my-app "Add cursor pagination to the orders endpoint"        # build it
+/speckit:constitution && /dev:ingest-standards && /dev:ingest-exemplars   # one-time: load the rules
+/dev:target register path/to/my-app                                       # point at your code
+/dev:feature my-app "Add cursor pagination to the orders endpoint"        # build it
 ```
 
 ### Ways to use it
 
-1. Think first: `/dev.ideate "<rough idea>"` explores options and trade-offs before any spec (read-only; builds nothing).
-2. One command for the whole lifecycle: `/dev.feature` runs specify through review.
+1. Think first: `/dev:ideate "<rough idea>"` explores options and trade-offs before any spec (read-only; builds nothing).
+2. One command for the whole lifecycle: `/dev:feature` runs specify through review.
 3. Cheaper modes: `--micro` (implement, test, review) or `--express` (skip the optional approval pauses).
-4. Phase by phase, if you want the control: `/speckit.specify`, `clarify`, `plan`, `tasks`, `implement`.
-5. Single commands, out of band: `/dev.ideate`, `/dev.analyze`, `/dev.test`, `/dev.review`, `/dev.audit`.
+4. Phase by phase, if you want the control: `/speckit:specify`, `clarify`, `plan`, `tasks`, `implement`.
+5. Single commands, out of band: `/dev:ideate`, `/dev:analyze`, `/dev:test`, `/dev:review`, `/dev:audit`.
 6. Knowledge only: ingest your standards and examples and use the skills ad hoc.
 
 Each one is spelled out in your tool's exact syntax in the [runtime guides](docs/runtimes/). Every slice also leaves a human-readable entry in `<target>/.throughline/CHANGELOG.md`, so each codebase carries its own record of what changed and why.
