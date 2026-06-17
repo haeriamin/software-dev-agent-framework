@@ -10,7 +10,7 @@ You describe a change. Throughline turns it into a tested, independently reviewe
 # spec -> plan -> tasks -> implement -> tests -> review -> branch sdd/<slice>.   You do the merge.
 ```
 
-> **v0.1, experimental.** [STATUS.md](STATUS.md) is an honest account of what's actually enforced versus only instructed, and what hasn't been tested yet. Read it before you rely on this for real work.
+> **v0.1, experimental.** [STATUS.md](STATUS.md) is an account of what's actually enforced versus only instructed, and what hasn't been tested yet. Read it before you rely on this for real work.
 >
 > Ask for auth, payments, or personal-data work and Throughline marks it CRITICAL. From there you lead and the agents only assist. That limit is deliberate.
 
@@ -67,7 +67,7 @@ Eight agents, each with one job, handing off through files rather than reaching 
 
 The review step is the heart of it. The Reviewer reads your standards from source (not the implementer's summary of them) and returns PASS, CONDITIONAL_PASS, or FAIL on a confidence score. It's the same kind of model on both sides, so treat it as a strong check rather than a second human. Your merge is the real final check.
 
-A few things hold this together. Every change cites the spec requirement it satisfies, the standard clause it follows, and an example when one exists, so it's cite-or-don't-ship. Work happens on `sdd/<slice>` branches (or with backups), agents never merge or push, and `/standards/` is read-only at the hook level. And the knowledge compounds: your standards, examples, and past decisions live in a shared wiki that every later task draws on.
+A few things hold this together. Every change cites the spec requirement it satisfies, the standard clause it follows, and an example when one exists, so it's cite-or-don't-ship. Each change is a *slice* (one feature, fix, or refactor), and all of its edits land on a dedicated git branch named `sdd/<slice>` — e.g. `sdd/orders-pagination` (`sdd` = spec-driven development). Nothing touches your main branch until you merge; to undo, just delete the branch. Agents never merge or push, and `/standards/` is read-only at the hook level. And the knowledge compounds: your standards, examples, and past decisions live in a shared wiki that every later task draws on.
 
 ### Does the review actually catch real bugs?
 
@@ -111,7 +111,7 @@ Start here for the overview and a comparison: [docs/runtimes/](docs/runtimes/).
 
 ```bash
 git clone <repo-url> && cd throughline
-powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows  ┐ one-time: wire the
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows   ┐ one-time: wire the
 bash tools/setup-hooks.sh                                        # mac/Linux ┘ write-safety hooks
 # open in VS Code (Copilot), or run `claude` (Claude Code), or `codex` (Codex)
 /speckit:constitution && /dev:ingest-standards && /dev:ingest-exemplars   # one-time: load the rules
