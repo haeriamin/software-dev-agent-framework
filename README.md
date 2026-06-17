@@ -20,15 +20,24 @@ Throughline is a spec-driven, multi-agent layer that sits on top of [spec-kit](h
 
 ## What it's good for (and what it's not)
 
-Throughline pays for its overhead on changes you want tested, reviewed, and recorded. Match the task to the command:
+Reach for it on a change you'd want a careful teammate to review. You name a registered project (say `orders-api`) and describe the change in plain words; here's what you get back:
 
-- **Build a feature or fix a bug** with `/dev:feature my-app "..."` (add `--micro` for a small fix). The bug-fix path is what the [SWE-bench run](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) used on a real pytest issue.
-- **Understand an area before changing it** with `/dev:analyze my-app src/billing`, which maps the code and the conventions it actually follows.
-- **Review a change** on its own with `/dev:review <slice-id>`.
+- **Ship a feature, safely.**
+  `/dev:feature orders-api "add cursor pagination to GET /orders"`
+  → it specs the change, writes it on a branch, adds tests, and an independent reviewer signs off against your standards before *you* merge.
+- **Fix a bug, with proof it's fixed.**
+  `/dev:feature orders-api "GET /orders returns the wrong page when ?page is negative" --micro`
+  → a test that fails before the fix and passes after, plus a one-line record of why it changed — not just a patch. (That's the exact shape of the real [pytest bug](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) it fixed end to end.)
+- **Get your bearings before touching unfamiliar code.**
+  `/dev:analyze orders-api src/billing`
+  → a grounded map of the modules and the conventions they actually follow, so your change starts from how the code really works.
+- **Get a second opinion on a change someone already made.**
+  `/dev:review orders-pagination` (the change's slice)
+  → the reviewer re-reads your standards from source and returns PASS / CONDITIONAL_PASS / FAIL with cited reasons.
 
-What it's *not* for: a quick "what does this function do?" or a throwaway script doesn't need a test, a review, or a record. There, just ask your AI tool in plain chat. The rule of thumb is simple: a change goes through Throughline, a question goes to plain chat.
+**Skip it** when there's nothing to review or record — a throwaway script, a one-line tweak, or a plain question like *"what does this function do?"*. Those go to your AI tool's normal chat. The rule of thumb: **a change goes through Throughline; a question goes to plain chat.**
 
-The full set of tasks with examples is in [What to use Throughline for](docs/use-cases.md).
+The full set, with examples, is in [What to use Throughline for](docs/use-cases.md).
 
 ## Why it exists
 
