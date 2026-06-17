@@ -19,3 +19,7 @@ Thumbs.db
 
 # Local editor workspace files at repo root
 /*.code-workspace
+
+# Python bytecode cache
+__pycache__/
+*.pyc
