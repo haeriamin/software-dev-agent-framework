@@ -87,7 +87,7 @@ Throughline has also solved a real **SWE-bench Lite** issue end to end (in `pyte
 
 Close to nothing. Throughline is mostly markdown the model reads; the engine is the AI tool you already have.
 
-- **git** — for the reversible `sdd/<slice>` branches and to read your target's state.
+- **git** — for the reversible per-change branches (`sdd/<slice>`, [explained below](#how-it-works)) and to read your target's state.
 - **One AI coding tool** — GitHub Copilot in VS Code, Claude Code, or Codex. That's the engine.
 - That's it. spec-kit isn't a separate install (its commands and its bash + PowerShell helper scripts ship inside `.specify/`), and the write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
 
