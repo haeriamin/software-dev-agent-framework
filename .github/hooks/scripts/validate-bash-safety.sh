@@ -13,6 +13,7 @@ set -uo pipefail
 INPUT=$(cat)
 
 PY="$(command -v python3 || command -v python || command -v py || true)"
+CMD=""
 if [ -n "$PY" ]; then
   CMD=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
@@ -22,10 +23,13 @@ except Exception:
     print(''); sys.exit(0)
 print((data.get('tool_input') or {}).get('command', ''))
 " 2>/dev/null || echo "")
-  [ -n "$CMD" ] || exit 0
+fi
+# Use the parsed command if we got one; otherwise scan the whole raw payload. Falling back
+# (rather than exiting 0) is deliberate: a broken or stub interpreter must NOT silently
+# disable the guard. The raw scan is conservative — it may over-block, never under-block.
+if [ -n "$CMD" ]; then
   C="${CMD//\\//}"
 else
-  # No interpreter: scan the whole raw payload. Conservative (may over-block, never under-block).
   C="${INPUT//\\//}"
 fi
 

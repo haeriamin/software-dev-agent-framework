@@ -8,6 +8,7 @@ set -uo pipefail
 INPUT=$(cat)
 
 PY="$(command -v python3 || command -v python || command -v py || true)"
+FILE_PATH=""
 if [ -n "$PY" ]; then
   FILE_PATH=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
@@ -21,8 +22,10 @@ for field in ['file_path', 'path', 'notebook_path']:
         print(ti[field]); sys.exit(0)
 print('')
 " 2>/dev/null || echo "")
-else
-  # No interpreter present: extract the first file_path/path/notebook_path string with grep.
+fi
+if [ -z "$FILE_PATH" ]; then
+  # No interpreter, or it produced nothing (e.g. a broken/stub python): fall back to grep
+  # rather than trusting the empty result — a stub must not silently disable the guard.
   FILE_PATH=$(printf '%s' "$INPUT" \
     | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
     | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')

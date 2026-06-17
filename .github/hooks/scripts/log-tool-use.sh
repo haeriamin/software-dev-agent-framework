@@ -7,6 +7,7 @@ set -uo pipefail
 INPUT=$(cat)
 
 PY="$(command -v python3 || command -v python || command -v py || true)"
+TOOL_NAME=""; FILE_PATH=""; ROOT=""
 if [ -n "$PY" ]; then
   eval "$(printf '%s' "$INPUT" | "$PY" -c "
 import json, shlex, sys
@@ -19,8 +20,10 @@ fp = next((ti[f] for f in ['file_path', 'path', 'notebook_path'] if f in ti), ''
 print('TOOL_NAME=' + shlex.quote(data.get('tool_name', 'unknown')))
 print('FILE_PATH=' + shlex.quote(fp))
 print('ROOT=' + shlex.quote(data.get('cwd', '.')))
-" 2>/dev/null)" || exit 0
-else
+" 2>/dev/null)" 2>/dev/null || true
+fi
+if [ -z "${FILE_PATH:-}" ]; then
+  # No interpreter, or it produced nothing (e.g. a broken/stub python): fall back to grep.
   FILE_PATH=$(printf '%s' "$INPUT" \
     | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
     | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
@@ -30,9 +33,9 @@ else
   ROOT=$(printf '%s' "$INPUT" \
     | grep -oE '"cwd"[[:space:]]*:[[:space:]]*"[^"]*"' \
     | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
-  TOOL_NAME="${TOOL_NAME:-unknown}"
-  ROOT="${ROOT:-.}"
 fi
+TOOL_NAME="${TOOL_NAME:-unknown}"
+ROOT="${ROOT:-.}"
 
 [ -n "${FILE_PATH:-}" ] || exit 0
 case "$FILE_PATH" in *wiki/log.md*) exit 0 ;; esac

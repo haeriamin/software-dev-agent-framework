@@ -54,11 +54,25 @@ Total ≈ **$6.1** across the run.
    `wiki/log.md` with no file under `review-reports/<target>/`. Left as-is for now (the audit
    flags it); a future runbook note could make micro-lane report files explicitly optional.
 
+4. **Fail-open in the POSIX guards (fixed).** Re-running the hook checks from **Git Bash**
+   (a Linux-like shell, to exercise the `.sh` path a macOS/Linux user gets) surfaced a worse
+   bug than #1: the `.sh` guards resolved `python3` to the Windows Store **stub** — a file that
+   is on `PATH` but doesn't execute — extracted an empty command, and then `exit 0`'d, silently
+   disabling the guard (fail-**open**). A real `claude` session launched from Git Bash ran
+   `git -C … push` unblocked for this reason. Fixed all four `.sh` guards to fall back to the
+   grep path whenever the interpreter yields nothing (a broken/stub interpreter must never
+   disable a guard), never `exit 0` on empty extraction. Re-verified directly (with the stub on
+   `PATH`) and **live**: the same `git -C … push` is now blocked by `validate-bash-safety.sh`
+   with the constitutional message. This also confirmed the `.sh` hooks fire in a real session
+   when `bash` is on `PATH` — the closest proxy available here for a Linux run.
+
 ## Method notes / honest limits
 
 - `--permission-mode bypassPermissions` was used so permission prompts didn't interfere; the
   **hooks still run** in that mode, which is what we wanted to exercise. PowerShell 5.1 mangles
   native-arg quoting, so prompts were piped via **stdin** (a leading `-m`/`-v` inside an arg was
   being parsed as a CLI flag otherwise).
-- This was Claude Code only. Codex's autonomous-subagent spawn (the reason Codex is "preview")
-  and a real macOS/Linux run remain unverified — they need those environments.
+- The POSIX `.sh` hooks were exercised via Git Bash (MINGW64) with `bash .sh` wiring and a real
+  `claude` session launched from that shell — bash userland, but `claude` is still the Windows
+  build. A native macOS/Linux run, and Codex's autonomous-subagent spawn (the reason Codex is
+  "preview"), still need those environments.
