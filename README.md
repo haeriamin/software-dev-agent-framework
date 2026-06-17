@@ -18,6 +18,18 @@ You describe a change. Throughline turns it into a tested, independently reviewe
 
 Throughline is a spec-driven, multi-agent layer that sits on top of [spec-kit](https://github.com/github/spec-kit) and drives your AI coding tool. You describe a change; a team of eight single-purpose agents specs it, plans it, writes it on a branch, tests it, and an independent reviewer checks it against your standards before anyone calls it done. Nothing merges without you. The process and the knowledge live in this repo. Your product code never does.
 
+## What it's good for (and what it's not)
+
+Throughline pays for its overhead on changes you want tested, reviewed, and recorded. Match the task to the command:
+
+- **Build a feature or fix a bug** with `/dev.feature my-app "..."` (add `--micro` for a small fix). The bug-fix path is what the [SWE-bench run](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) used on a real pytest issue.
+- **Understand an area before changing it** with `/dev.analyze my-app src/billing`, which maps the code and the conventions it actually follows.
+- **Review a change** on its own with `/dev.review <slice-id>`.
+
+What it's *not* for: a quick "what does this function do?" or a throwaway script doesn't need a test, a review, or a record. There, just ask your AI tool in plain chat. The rule of thumb is simple: a change goes through Throughline, a question goes to plain chat.
+
+The full set of tasks with examples is in [What to use Throughline for](docs/use-cases.md).
+
 ## Why it exists
 
 Frontier models are great at the happy path and bad at the boring parts: forgotten input validation, the edge cases, the error handling. These are *specification-completeness* bugs, and asking the model for "more" or "thorough" tests doesn't fix them. It just writes more happy-path tests.

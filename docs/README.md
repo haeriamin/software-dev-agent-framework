@@ -16,6 +16,9 @@ what you need.
 | 9 | [Troubleshooting](09-troubleshooting.md) | Common problems and what they mean |
 | 10 | [Validation](10-validation.md) | Test whether it is worth it on your own work |
 
+**What to use it for**: [Common tasks and examples](use-cases.md) — fix a bug, understand an area,
+review a change, build a feature, and when to just use plain chat instead.
+
 **Choose your host**: [Runtimes — Copilot · Claude Code · Codex](runtimes/) — step-by-step setup
 and the five ways to use the framework on each.
 
