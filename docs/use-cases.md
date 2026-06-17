@@ -1,94 +1,109 @@
 # What to use Throughline for
 
-Throughline earns its overhead on changes you want tested, reviewed, and recorded. It isn't the right tool for everything, and the quickest way to get value is to match the task to the right command, or to skip the framework when plain chat would do.
+A better model makes each agent smarter; it doesn't make the work *trustworthy*. Throughline turns one request into a change that is:
 
-The rule of thumb: **a change goes through Throughline; a question goes to plain chat.**
+- **Tested** — a real test that fails before the change and passes after, run for real, with the output recorded.
+- **Independently reviewed** — a separate reviewer re-reads *your* standards from source and gates the change (PASS / CONDITIONAL_PASS / FAIL), so "the tests pass" isn't the whole story.
+- **Recorded** — every change cites the spec rule and the standard it followed, and leaves a plain-English entry in your codebase's own changelog.
+- **Reversible** — work lands on a branch *you* merge. Nothing merges itself; risky surfaces (auth, payments, schemas, personal data) escalate to you automatically.
+- **Held to your rules** — your standards and examples, not the model's defaults.
 
-Commands below use the dot form (`/dev.feature`), which is what Copilot and Codex use. On Claude Code, swap the dot for a colon (`/dev:feature`).
+If a task doesn't need those, don't reach for it. The rule of thumb:
 
-Each task here is backed by a named workflow under [`.specify/workflows/`](../.specify/workflows/) — that YAML is the source of truth for the steps and gates; the commands below are just how you invoke them. The map: build a feature → `dev-feature`, fix a bug → `dev-bugfix`, understand an area → `dev-explore`, review a change → `dev-review`, new project → `dev-greenfield`.
+> **A change goes through Throughline. A question goes to plain chat.**
 
-## Explore an idea before you build
+*Commands below use the dot form (`/dev.feature`) — what Copilot and Codex use. On Claude Code, swap the dot for a colon (`/dev:feature`). Same commands, same behavior.*
 
-When you have a rough idea and want to think it through *with* the framework rather than commit to a spec, use `/dev.ideate`. It's read-only and conversational: it lays out a few genuinely different approaches with their trade-offs and risks, grounds them in how your code actually works, asks the questions that would change your mind, and recommends a direction.
+## Contents
+
+1. [Explore an idea before you build](#1-explore-an-idea-before-you-build) — `/dev.ideate`
+2. [Build a feature](#2-build-a-feature) — `/dev.feature`
+3. [Fix a bug](#3-fix-a-bug) — `/dev.feature --micro`
+4. [Start a new project](#4-start-a-new-project) — `/dev.feature` on a `--new` target
+5. [Understand an area before you change it](#5-understand-an-area-before-you-change-it) — `/dev.analyze`
+6. [Review a change someone already made](#6-review-a-change-someone-already-made) — `/dev.review`
+7. [Audit quality across your projects](#7-audit-quality-across-your-projects) — `/dev.audit`
+8. [Bring in your own standards and examples](#8-bring-in-your-own-standards-and-examples) — `/dev.ingest-*`
+
+Then: [when to just use plain chat](#when-to-just-use-plain-chat) · [what it leaves in your codebase](#what-throughline-leaves-in-your-codebase) · [when not to use it](#when-not-to-use-it).
+
+The first five are the everyday path — roughly the order you meet them on a real task: think, build or fix, learn the code, get a second opinion. The last three set up and maintain the framework around them.
+
+---
+
+## 1. Explore an idea before you build
+
+**When:** you have a rough idea and want to think it through *with* the framework before committing to a spec.
 
 ```
 /dev.ideate "let users save a cart and come back to it later" my-app
 ```
 
-It writes an ideation note (in `work-queue/`) and stops at a recommendation — no spec, no branch, no code. When you've chosen, start the real lifecycle with `/dev.feature` (or `/speckit.specify`), which re-derives a proper analysis and spec from scratch. Think of it as the framework-native version of thinking out loud, except the notes are kept and the options respect your standards. (For a plain "what does this do?", still just use chat.)
+It's read-only and conversational: it lays out a few genuinely different approaches with their trade-offs and risks, grounds them in how your code actually works, asks the questions that would change your mind, and recommends a direction. It writes an ideation note and **stops at a recommendation — no spec, no branch, no code**. When you've chosen, kick off the real lifecycle with `/dev.feature` (case 2). Think of it as thinking out loud, except the notes are kept and the options respect your standards.
 
-## Build a feature
+## 2. Build a feature
 
-The headline case. Describe what you want and let the lifecycle run.
+**When:** you want to add or change real behavior. The headline case.
 
 ```
 /dev.target register path/to/my-app
 /dev.feature my-app "Add cursor pagination to the orders endpoint"
 ```
 
-It specs the change, plans it, writes it on a branch, tests it, and has an independent reviewer gate it before it's done. You do the merge. For anything touching a contract, schema, auth, payments, or personal data, it raises the bar automatically (design review, or human-led for CRITICAL).
+It specs the change, plans it, writes it on a branch, tests it, and has an independent reviewer gate it before it's done — then hands you a branch to merge. Anything touching a contract, schema, auth, payments, or personal data raises the bar automatically (a design review, or human-led for CRITICAL). *Workflow: `dev-feature`.*
 
-## Fix a bug
+## 3. Fix a bug
 
-A bug fix is just a small change, so it runs through the same command. For a contained fix, add `--micro` to skip the spec and plan paperwork and keep the part that matters (implement, test, review):
+**When:** the change is small and contained. A bug fix runs through the same command — add `--micro` to skip the spec/plan paperwork and keep the part that matters (implement → test → review):
 
 ```
 /dev.feature my-app "Fix: pagination returns the wrong rows when page is negative" --micro
 ```
 
-The Implementer fixes it on a branch, the Tester writes a test that fails before the fix and passes after, and the Reviewer checks it independently. You get a real test as evidence and a record of why it changed, not just a patch.
+The Implementer fixes it on a branch, the Tester writes a test that **fails before the fix and passes after**, and the Reviewer checks it independently. You get evidence and a record of *why* it changed, not just a patch. This is exactly what the [SWE-bench validation run](validation-runs/2026-06-16-swebench-pytest-11143.md) did on a real pytest issue — from the bug report alone, the fix passed the benchmark's own hidden test with no regressions. Drop `--micro` when the fix is large or risky enough to deserve a full spec and plan. *Workflow: `dev-bugfix`.*
 
-This is exactly what the [SWE-bench validation run](validation-runs/2026-06-16-swebench-pytest-11143.md) did on a real pytest issue: from the bug report alone, the fix passed the benchmark's own hidden test with no regressions.
+## 4. Start a new project
 
-Use the full command (no `--micro`) when the fix is larger or risky enough to deserve a spec and plan.
-
-## Understand an area before you change it
-
-When you're about to work in unfamiliar code, `/dev.analyze` maps it for you: the modules, the conventions it actually follows, where the complexity is, plus a fingerprint of the source it read.
-
-```
-/dev.analyze my-app src/billing
-```
-
-The Analyst writes a grounded report (in `work-queue/`) that the rest of the pipeline then builds on, so your change starts from how the code really works rather than a guess. You can also call the `codebase-mapper` or `pattern-matcher` skills directly for a one-off.
-
-## Just explain something, or ask a quick question
-
-Here's where to *not* use the framework. "What does this function do?", "why is this designed this way?", "walk me through this flow", these are questions, not changes. They don't need a test, a review, or a record, so the framework would only add ceremony.
-
-For those, ask your AI tool in plain chat (Copilot, Claude Code, or Codex). Reach for `/dev.analyze` only when the question is really "help me understand this so I can change it safely."
-
-## Review a change someone already made
-
-You can run the gate on its own, without the rest of the lifecycle:
-
-```
-/dev.review <slice-id>
-```
-
-The Reviewer re-reads your standards from source, checks the change against them, and returns PASS, CONDITIONAL_PASS, or FAIL with cited findings. Useful as a second opinion on an agent's (or a teammate's) work.
-
-## Start a new project
-
-Register an empty path with `--new` and the same one command builds it greenfield (it adds a design step and scaffolds the skeleton first):
+**When:** you're building something from scratch. Register an empty path with `--new` and the same one command builds it greenfield (it adds a design step and scaffolds the skeleton first):
 
 ```
 /dev.target register path/to/new-app --new
 /dev.feature new-app "A CLI tool that converts CSV to Parquet"
 ```
 
-## Check quality across projects
+*Workflow: `dev-greenfield`.*
 
-Once you have a few targets, the Auditor rolls up the review and test reports, spots recurring problems, and flags gaps in your examples:
+## 5. Understand an area before you change it
+
+**When:** you're about to work in unfamiliar code and want to start from how it really works, not a guess.
+
+```
+/dev.analyze my-app src/billing
+```
+
+The Analyst maps it for you — the modules, the conventions it actually follows, where the complexity is — and writes a grounded report (with a fingerprint of the source it read) that the rest of the pipeline builds on. You can also call the `codebase-mapper` or `pattern-matcher` skills directly for a one-off. *Workflow: `dev-explore`.*
+
+## 6. Review a change someone already made
+
+**When:** you want a second opinion on a change — an agent's or a teammate's — without running the whole lifecycle.
+
+```
+/dev.review <slice-id>
+```
+
+The Reviewer re-reads your standards from source, checks the change against them, and returns PASS / CONDITIONAL_PASS / FAIL with cited findings. *Workflow: `dev-review`.*
+
+## 7. Audit quality across your projects
+
+**When:** you have a few targets and want the bird's-eye view. The Auditor rolls up the review and test reports, spots recurring problems, and flags gaps in your examples:
 
 ```
 /dev.audit
 ```
 
-## Bring in your own standards and examples
+## 8. Bring in your own standards and examples
 
-The `/standards/` and `/exemplars/` that ship are starter seeds. Replace them with your team's and re-ingest, and every later change is held to your rules:
+**When:** you want changes held to *your* team's rules. The `/standards/` and `/exemplars/` that ship are starter seeds — replace them with yours and re-ingest, and every later change is checked against them:
 
 ```
 # drop your files into /standards/ and /exemplars/, then:
@@ -96,12 +111,20 @@ The `/standards/` and `/exemplars/` that ship are starter seeds. Replace them wi
 /dev.ingest-exemplars
 ```
 
-## The change record left in your codebase
+---
 
-Every slice that changes a target writes a human-readable entry to `.throughline/CHANGELOG.md` **inside that target** — newest first, with what changed, the files touched, the spec and standards it cited, and the final review verdict. The entry is written on the `sdd/<slice>` branch, so it merges atomically with the change it describes and travels with your code even if it's ever separated from the framework repo. The Implementer adds the entry during implementation (`Status: PENDING REVIEW`); the verdict is stamped in when the slice closes. Turn it off per target with `changelog: off` in `targets/<id>.yml`.
+## When to just use plain chat
+
+"What does this function do?", "why is this designed this way?", "walk me through this flow" — these are **questions, not changes**. They don't need a test, a review, or a record, so the framework would only add ceremony. Ask your AI tool in plain chat. Reach for `/dev.analyze` (case 5) only when the question is really "help me understand this so I can change it safely."
+
+## What Throughline leaves in your codebase
+
+Every slice that changes a target writes a human-readable entry to **`.throughline/CHANGELOG.md` inside that target** — newest first, with what changed, the files touched, the spec and standards it cited, and the final review verdict. It's written on the `sdd/<slice>` branch, so it merges atomically with the change and travels with your code even if it's ever separated from the framework. Turn it off per target with `changelog: off` in `targets/<id>.yml`.
 
 ## When not to use it
 
 Skip the framework for throwaway scripts, one-line tweaks with no contract or security surface, and plain questions. The overhead is real and only pays off when a clear record and a strong review matter. For the small stuff, use `--micro`, the single commands, or just plain chat.
+
+---
 
 See also: [Building Features](04-building-features.md) · [Quality Gates](06-quality-gates.md) · [Commands](../COMMANDS.md)
