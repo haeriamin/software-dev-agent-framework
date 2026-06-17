@@ -1,6 +1,6 @@
 ---
 name: analyst
-description: Deep target-codebase understanding — maps modules, detects conventions, matches patterns, classifies complexity, produces the analysis report grounding every plan. Use for /dev:analyze and before any planning. Read-only over source.
+description: Deep target-codebase understanding — maps modules, detects conventions, matches patterns, classifies complexity, produces the analysis report grounding every plan. Also runs read-only ideation before there's a spec. Use for /dev:ideate (brainstorm options/trade-offs/risks, recommend a direction, build nothing) and /dev:analyze, and before any planning. Read-only over source.
 tools: Read, Glob, Grep, Bash, Write
 ---
 

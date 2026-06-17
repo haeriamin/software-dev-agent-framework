@@ -1,7 +1,7 @@
 # /dev.feature
 
 **Agent**: Orchestrator (drives; delegates every phase to its owning persona)
-**Reads/Writes**: only through the phase commands it invokes, plus `work-queue/**` state moves and `wiki/log.md` appends
+**Reads/Writes**: only through the phase commands it invokes, plus `work-queue/**` state moves, `wiki/log.md` appends, and the verdict stamp on `<target>/.throughline/CHANGELOG.md` at slice close (step 11)
 **Never**: performs analysis/design/implementation/testing/review itself; merges or pushes (Principle VI)
 
 Single point of input for building software — a feature on an existing codebase, or a
@@ -85,7 +85,13 @@ ways: design becomes mandatory (step 5) and scaffold runs before implementation 
    - Reviewer FAIL → return findings to `/dev.implement`; **max 2 retry cycles**, then
      `/dev.review-escalated` and STOP (Principle V).
 10. **Audit** *(only with `--audit`)* — `/dev.audit <target-id>`.
-11. **Final report** (single message):
+11. **Stamp the target change record.** Update this slice's entry in
+    `<target>/.throughline/CHANGELOG.md` (created by `/dev.implement`): set `Status` to the
+    terminal verdict (`PASS` / `CONDITIONAL_PASS` / `FAIL`, with confidence) and add the merge
+    note. On a clean FAIL after retries, record `FAIL — escalated`. This is a target write on the
+    slice branch; it is lifecycle bookkeeping, so the Orchestrator owns it (the Reviewer stays
+    read-only on the target). Skip if the target sets `changelog: off`.
+12. **Final report** (single message):
     - Verdict + confidence with the three sub-scores
     - Branch name (`sdd/<slice>`) + exact human merge instructions + rollback procedure
     - Artifact links: spec, plan, design (if any), tasks, scaffold report (greenfield),

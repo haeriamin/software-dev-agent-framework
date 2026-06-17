@@ -49,10 +49,11 @@ Run individually when you want phase-by-phase control instead of `/dev.feature`.
 | `/dev.target` | Orchestrator | `register <path> [--id <id>] [--new]` · `inspect <id>` · `update <id> <k>=<v>` · `list` | `targets/<id>.yml`, `<id>.code-workspace`, Claude `settings.local.json` access |
 | `/dev.ingest-standards` | Archivist | — | `wiki/standards-summary.md` (+ concepts, index, log) |
 | `/dev.ingest-exemplars` | Archivist | — | `wiki/pattern-library.md` (+ concepts, index, log) |
+| `/dev.ideate` | Analyst | `"<rough idea>" [target-id]` | `work-queue/pending/<topic>-ideation.md` — read-only brainstorming before any spec; explores options/trade-offs/risks, recommends a direction, builds nothing |
 | `/dev.analyze` | Analyst | `<target-id> [scope]` | `work-queue/in-progress/<slice>-analysis.md` |
 | `/dev.design` | Architect | `<slice-id>` | `specs/NNN-*/design.md` + ADR index entries (required for HIGH/CRITICAL) |
 | `/dev.scaffold` | Implementer | `<slice-id>` | Greenfield skeleton at the target with verified-green test/lint loop |
-| `/dev.implement` | Implementer | `<slice-id>` | Target source on `sdd/<slice>` + Decision Records per task |
+| `/dev.implement` | Implementer | `<slice-id>` | Target source on `sdd/<slice>` + Decision Records per task + `<target>/.throughline/CHANGELOG.md` entry |
 | `/dev.test` | Tester | `<slice-id>` | Target test files + `review-reports/<target>/<slice>-tests.md` (real execution evidence) |
 | `/dev.review` | Reviewer | `<slice-id>` | `review-reports/<target>/<slice>-review.md` — PASS / CONDITIONAL_PASS / FAIL |
 | `/dev.audit` | Auditor | `[target-id]` | `review-reports/portfolio-summary.md` + `recommendations.md` |

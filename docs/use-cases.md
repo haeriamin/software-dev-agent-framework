@@ -8,6 +8,16 @@ Commands below use the dot form (`/dev.feature`), which is what Copilot and Code
 
 Each task here is backed by a named workflow under [`.specify/workflows/`](../.specify/workflows/) — that YAML is the source of truth for the steps and gates; the commands below are just how you invoke them. The map: build a feature → `dev-feature`, fix a bug → `dev-bugfix`, understand an area → `dev-explore`, review a change → `dev-review`, new project → `dev-greenfield`.
 
+## Explore an idea before you build
+
+When you have a rough idea and want to think it through *with* the framework rather than commit to a spec, use `/dev.ideate`. It's read-only and conversational: it lays out a few genuinely different approaches with their trade-offs and risks, grounds them in how your code actually works, asks the questions that would change your mind, and recommends a direction.
+
+```
+/dev.ideate "let users save a cart and come back to it later" my-app
+```
+
+It writes an ideation note (in `work-queue/`) and stops at a recommendation — no spec, no branch, no code. When you've chosen, start the real lifecycle with `/dev.feature` (or `/speckit.specify`), which re-derives a proper analysis and spec from scratch. Think of it as the framework-native version of thinking out loud, except the notes are kept and the options respect your standards. (For a plain "what does this do?", still just use chat.)
+
 ## Build a feature
 
 The headline case. Describe what you want and let the lifecycle run.
@@ -85,6 +95,10 @@ The `/standards/` and `/exemplars/` that ship are starter seeds. Replace them wi
 /dev.ingest-standards
 /dev.ingest-exemplars
 ```
+
+## The change record left in your codebase
+
+Every slice that changes a target writes a human-readable entry to `.throughline/CHANGELOG.md` **inside that target** — newest first, with what changed, the files touched, the spec and standards it cited, and the final review verdict. The entry is written on the `sdd/<slice>` branch, so it merges atomically with the change it describes and travels with your code even if it's ever separated from the framework repo. The Implementer adds the entry during implementation (`Status: PENDING REVIEW`); the verdict is stamped in when the slice closes. Turn it off per target with `changelog: off` in `targets/<id>.yml`.
 
 ## When not to use it
 

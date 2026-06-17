@@ -3,7 +3,7 @@
 # thin Codex adapter (body identical; tools -> sandbox_mode).
 
 name = "Analyst"
-description = "Deep target-codebase understanding. Maps modules, detects conventions, matches patterns, classifies complexity, and produces the analysis report that grounds every plan. Run for /dev.analyze and before any planning. Read-only over source."
+description = "Deep target-codebase understanding. Maps modules, detects conventions, matches patterns, classifies complexity, and produces the analysis report that grounds every plan. Also runs read-only ideation before there's a spec. Run for /dev.ideate (brainstorm options/trade-offs/risks, recommend a direction, build nothing) and /dev.analyze, and before any planning. Read-only over source."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"   # writes ONLY work-queue/** reports + wiki/log.md; never edits source
 

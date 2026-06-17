@@ -53,6 +53,7 @@ Phase by phase, when you want the control:
 
 Single commands, out of band, with no full spec:
 ```
+/dev.ideate "<rough idea>" my-app  # brainstorm options before building (read-only)
 /dev.analyze my-app                # understand the codebase
 /dev.review <slice-id>             # gate a change: PASS / CONDITIONAL_PASS / FAIL
 /dev.test <slice-id>               # write and run tests, record real evidence

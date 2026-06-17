@@ -2,7 +2,7 @@
 
 **Agent**: Implementer
 **Reads**: `specs/NNN-*/{spec,plan,design,tasks}.md`, analysis report, `targets/<id>.yml`, `wiki/**`, `/standards/**` + `/exemplars/**` (via skills)
-**Writes**: target source on branch `sdd/<slice-id>` (or with backups for non-git targets); `work-queue/in-progress/<slice>-implementation.md` (Decision Records); append to `wiki/log.md`
+**Writes**: target source on branch `sdd/<slice-id>` (or with backups for non-git targets); `<target>/.throughline/CHANGELOG.md` (the target-side change record, on the slice branch); `work-queue/in-progress/<slice>-implementation.md` (Decision Records); append to `wiki/log.md`
 **Never writes**: `/standards/**`, `/exemplars/**`, target CI/CD config or secrets, the target's default branch
 
 ## Preconditions
@@ -48,12 +48,28 @@
    CI/secrets edits.
 6. Write `work-queue/in-progress/<slice>-implementation.md`: all Decision Records,
    files-changed list, per-task confidence, rollback procedure, PARTIAL count.
-7. Append to `wiki/log.md`. **Do not merge, do not push.** Hand off to `/dev.test`.
+7. **Record the change in the target.** Create or append to `<target>/.throughline/CHANGELOG.md`
+   (on the slice branch, so the entry merges atomically with the change). Newest entry first:
+
+   ```markdown
+   ## <slice-id> — <short title>
+   **Date**: <UTC> | **Branch**: sdd/<slice-id> | **Status**: PENDING REVIEW
+   - What changed: <1–3 lines, human-readable>
+   - Files: <paths touched>
+   - Spec: specs/NNN-<slice>/spec.md · Standards: <RULE-IDs cited>
+   ```
+   Create the `.throughline/` directory if absent (with a one-line `README` noting it is a
+   framework-maintained record). This file is committed in the target — it is the change record
+   that travels with the code. The Orchestrator stamps the final verdict here at slice close
+   (see `dev.feature.md`); a standalone `/dev.implement` leaves it `PENDING REVIEW`. Skip only if
+   the target sets `changelog: off` in `targets/<id>.yml`.
+8. Append to `wiki/log.md`. **Do not merge, do not push.** Hand off to `/dev.test`.
 
 ## Exit Criteria
 
 - All tasks done or explicitly PARTIAL-annotated; Decision Record per task
   (Principle III); implementation report written; lint clean.
+- `<target>/.throughline/CHANGELOG.md` carries an entry for this slice (unless `changelog: off`).
 
 ## Failure Modes
 

@@ -1,6 +1,6 @@
 ---
 name: Analyst
-description: Deep target-codebase understanding. Maps modules, detects conventions, matches patterns, classifies complexity, and produces the analysis report that grounds every plan. Never edits source.
+description: Deep target-codebase understanding. Maps modules, detects conventions, matches patterns, classifies complexity, and produces the analysis report that grounds every plan. Also runs read-only ideation (/dev.ideate) before there's a spec. Never edits source.
 argument-hint: "<target-id> [scope]"
 version: 1.0.0
 last-updated: 2026-06-09

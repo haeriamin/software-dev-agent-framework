@@ -65,6 +65,7 @@ Phase by phase, when you want the control:
 
 Single commands, out of band, with no full spec:
 ```
+/dev.ideate "<rough idea>" my-app
 /dev.analyze my-app
 /dev.review <slice-id>
 /dev.test <slice-id>
