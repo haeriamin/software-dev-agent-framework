@@ -2,15 +2,14 @@
 # validate-immutable-paths.sh (Claude Code PreToolUse hook — POSIX variant)
 # Blocks write tools targeting /standards/ or /exemplars/ (Constitution Principle I).
 # Claude Code protocol: stdin JSON {tool_name, tool_input}; exit 2 + stderr = block.
+# Dependency-free: uses a JSON parser if one is present, else a tolerant grep fallback.
 set -uo pipefail
 
 INPUT=$(cat)
 
-PY="$(command -v python3 || command -v python || command -v py)"
-[ -n "$PY" ] || PY=python3
-
-
-FILE_PATH=$(echo "$INPUT" | "$PY" -c "
+PY="$(command -v python3 || command -v python || command -v py || true)"
+if [ -n "$PY" ]; then
+  FILE_PATH=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -22,6 +21,12 @@ for field in ['file_path', 'path', 'notebook_path']:
         print(ti[field]); sys.exit(0)
 print('')
 " 2>/dev/null || echo "")
+else
+  # No interpreter present: extract the first file_path/path/notebook_path string with grep.
+  FILE_PATH=$(printf '%s' "$INPUT" \
+    | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
+fi
 
 [ -n "$FILE_PATH" ] || exit 0
 

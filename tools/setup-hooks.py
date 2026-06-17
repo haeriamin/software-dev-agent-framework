@@ -14,7 +14,11 @@ What it writes:
 The cross-platform read-only guard on /standards/ and /exemplars/ lives in the
 committed .claude/settings.json `permissions.deny` block and needs no setup.
 
-Run it once after cloning:
+This Python version is OPTIONAL. The default, no-dependency path is the shell-native
+setup that needs nothing beyond the OS shell:
+  Windows:      powershell -ExecutionPolicy Bypass -File tools\\setup-hooks.ps1
+  macOS/Linux:  bash tools/setup-hooks.sh
+Use this Python script only if you prefer it:
   Windows:      py tools\\setup-hooks.py
   macOS/Linux:  python3 tools/setup-hooks.py
 """

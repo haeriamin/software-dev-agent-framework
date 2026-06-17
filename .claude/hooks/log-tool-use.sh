@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 # log-tool-use.sh (Claude Code PostToolUse hook — POSIX variant)
 # Appends a structured entry to wiki/log.md for file-writing tool calls (Principle VII).
-# Never blocks (always exits 0).
+# Never blocks (always exits 0). Dependency-free: JSON parser if present, else grep fallback.
 set -uo pipefail
 
 INPUT=$(cat)
 
-PY="$(command -v python3 || command -v python || command -v py)"
-[ -n "$PY" ] || PY=python3
-
-
-eval "$(echo "$INPUT" | "$PY" -c "
+PY="$(command -v python3 || command -v python || command -v py || true)"
+if [ -n "$PY" ]; then
+  eval "$(printf '%s' "$INPUT" | "$PY" -c "
 import json, shlex, sys
 try:
     data = json.load(sys.stdin)
@@ -22,6 +20,19 @@ print('TOOL_NAME=' + shlex.quote(data.get('tool_name', 'unknown')))
 print('FILE_PATH=' + shlex.quote(fp))
 print('ROOT=' + shlex.quote(data.get('cwd', '.')))
 " 2>/dev/null)" || exit 0
+else
+  FILE_PATH=$(printf '%s' "$INPUT" \
+    | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
+  TOOL_NAME=$(printf '%s' "$INPUT" \
+    | grep -oE '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
+  ROOT=$(printf '%s' "$INPUT" \
+    | grep -oE '"cwd"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
+  TOOL_NAME="${TOOL_NAME:-unknown}"
+  ROOT="${ROOT:-.}"
+fi
 
 [ -n "${FILE_PATH:-}" ] || exit 0
 case "$FILE_PATH" in *wiki/log.md*) exit 0 ;; esac

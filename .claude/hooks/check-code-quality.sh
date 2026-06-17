@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # check-code-quality.sh (Claude Code PostToolUse hook — POSIX variant)
 # Lightweight quality lint on just-written source files. Warns via stdout; never blocks.
+# Dependency-free: JSON parser if present, else grep fallback.
 set -uo pipefail
 
 INPUT=$(cat)
 
-PY="$(command -v python3 || command -v python || command -v py)"
-[ -n "$PY" ] || PY=python3
-
-
-FILE_PATH=$(echo "$INPUT" | "$PY" -c "
+PY="$(command -v python3 || command -v python || command -v py || true)"
+if [ -n "$PY" ]; then
+  FILE_PATH=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -21,6 +20,11 @@ for field in ['file_path', 'path', 'notebook_path']:
         print(ti[field]); sys.exit(0)
 print('')
 " 2>/dev/null || echo "")
+else
+  FILE_PATH=$(printf '%s' "$INPUT" \
+    | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
+fi
 
 [ -n "$FILE_PATH" ] && [ -f "$FILE_PATH" ] || exit 0
 

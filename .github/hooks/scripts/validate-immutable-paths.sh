@@ -1,42 +1,42 @@
 #!/usr/bin/env bash
-# validate-immutable-paths.sh
-# PreToolUse hook — blocks write operations targeting immutable directories.
-# Tool call context arrives as JSON on stdin. Exit 1 with a message to block; exit 0 to allow.
-set -euo pipefail
+# validate-immutable-paths.sh (Claude Code PreToolUse hook — POSIX variant)
+# Blocks write tools targeting /standards/ or /exemplars/ (Constitution Principle I).
+# Claude Code protocol: stdin JSON {tool_name, tool_input}; exit 2 + stderr = block.
+# Dependency-free: uses a JSON parser if one is present, else a tolerant grep fallback.
+set -uo pipefail
 
 INPUT=$(cat)
 
-PY="$(command -v python3 || command -v python || command -v py)"
-[ -n "$PY" ] || PY=python3
-
-
-FILE_PATH=$(echo "$INPUT" | "$PY" -c "
+PY="$(command -v python3 || command -v python || command -v py || true)"
+if [ -n "$PY" ]; then
+  FILE_PATH=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
 except Exception:
     print(''); sys.exit(0)
-ti = data.get('tool_input', data)
-for field in ['path', 'file_path', 'target', 'destination']:
-    if isinstance(ti, dict) and field in ti:
+ti = data.get('tool_input') or {}
+for field in ['file_path', 'path', 'notebook_path']:
+    if field in ti:
         print(ti[field]); sys.exit(0)
 print('')
 " 2>/dev/null || echo "")
-
-if [ -z "$FILE_PATH" ]; then
-  exit 0  # not a file-write tool or path not detectable — allow
+else
+  # No interpreter present: extract the first file_path/path/notebook_path string with grep.
+  FILE_PATH=$(printf '%s' "$INPUT" \
+    | grep -oE '"(file_path|path|notebook_path)"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"$/\1/')
 fi
 
+[ -n "$FILE_PATH" ] || exit 0
+
 NORMALIZED="${FILE_PATH//\\//}"
-NORMALIZED="${NORMALIZED#./}"
-
-for PREFIX in "standards/" "exemplars/"; do
-  if [[ "$NORMALIZED" == "$PREFIX"* || "$NORMALIZED" == *"/$PREFIX"* ]]; then
-    echo "BLOCKED: Attempted write to immutable path: $FILE_PATH"
-    echo "The /standards/ and /exemplars/ directories are READ ONLY (Constitution Principle I)."
-    echo "Agents must never modify source material. Add new files via human curation only."
-    exit 1
-  fi
-done
-
+case "$NORMALIZED" in
+  standards/*|*/standards/*|exemplars/*|*/exemplars/*)
+    echo "BLOCKED: '$FILE_PATH' is inside an immutable directory (/standards/ or /exemplars/)." >&2
+    echo "Constitution Principle I: these paths are human-curated and READ ONLY to agents." >&2
+    echo "Stop and escalate per .github/instructions/escalation-protocol.instructions.md." >&2
+    exit 2
+    ;;
+esac
 exit 0

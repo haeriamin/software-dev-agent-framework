@@ -74,6 +74,16 @@ These tasks had tricky edges on purpose, which is exactly where the check earns 
 
 Throughline has also solved a real **SWE-bench Lite** issue end to end (in `pytest-dev/pytest`), working from the bug report alone. Its one-line root-cause fix passes the benchmark's own hidden test with no regressions (115 tests still green), and the Tester broadened the coverage past the single case in the gold test. [Full run.](docs/validation-runs/2026-06-16-swebench-pytest-11143.md)
 
+## Requirements
+
+Close to nothing. Throughline is mostly markdown the model reads; the engine is the AI tool you already have.
+
+- **git** — for the reversible `sdd/<slice>` branches and to read your target's state.
+- **One AI coding tool** — GitHub Copilot in VS Code, Claude Code, or Codex. That's the engine.
+- That's it. spec-kit isn't a separate install (its commands and its bash + PowerShell helper scripts ship inside `.specify/`), and the write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
+
+So on any of the three tools, on Windows/macOS/Linux: clone, run the one-time `tools/setup-hooks.*` to wire the hooks for your OS, and go.
+
 ## Getting started
 
 ### Pick your tool
@@ -92,6 +102,8 @@ Start here for the overview and a comparison: [docs/runtimes/](docs/runtimes/).
 
 ```bash
 git clone <repo-url> && cd throughline
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows  ┐ one-time: wire the
+bash tools/setup-hooks.sh                                        # mac/Linux ┘ write-safety hooks
 # open in VS Code (Copilot), or run `claude` (Claude Code), or `codex` (Codex)
 /speckit.constitution && /dev.ingest-standards && /dev.ingest-exemplars   # one-time: load the rules
 /dev.target register path/to/my-app                                       # point at your code

@@ -6,15 +6,15 @@
 # Conservative by design: read-only commands mentioning an immutable path together with a
 # write token are blocked too — re-form the command without the write token.
 # Protocol: stdin JSON {tool_name, tool_input:{command}}; exit 2 + stderr = block.
+# Dependency-free: parses the command with a JSON tool if present; otherwise scans the raw
+# payload (fail-safe — the raw JSON still contains the command, so this can only over-block).
 set -uo pipefail
 
 INPUT=$(cat)
 
-PY="$(command -v python3 || command -v python || command -v py)"
-[ -n "$PY" ] || PY=python3
-
-
-CMD=$(echo "$INPUT" | "$PY" -c "
+PY="$(command -v python3 || command -v python || command -v py || true)"
+if [ -n "$PY" ]; then
+  CMD=$(printf '%s' "$INPUT" | "$PY" -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -22,11 +22,14 @@ except Exception:
     print(''); sys.exit(0)
 print((data.get('tool_input') or {}).get('command', ''))
 " 2>/dev/null || echo "")
+  [ -n "$CMD" ] || exit 0
+  C="${CMD//\\//}"
+else
+  # No interpreter: scan the whole raw payload. Conservative (may over-block, never under-block).
+  C="${INPUT//\\//}"
+fi
 
-[ -n "$CMD" ] || exit 0
-C="${CMD//\\//}"
-
-if echo "$C" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+(push|merge)\b'; then
+if echo "$C" | grep -qE '(^|[;&|"]|\\\\n)[[:space:]]*git[[:space:]]+(push|merge)\b'; then
   echo "BLOCKED: 'git push' / 'git merge' are human-only actions (Constitution Principle VI)." >&2
   echo "Present the sdd/<slice> branch in your report; the human merges." >&2
   exit 2

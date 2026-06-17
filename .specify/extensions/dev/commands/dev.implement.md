@@ -33,6 +33,12 @@
      - Files changed: [...]
      - Confidence: 0.XX
      ```
+     The standard clause MUST be a real rule id that exists in the source file (e.g.
+     `standards/engineering-standards.md §ENG-02`), copied from the file — never a
+     paraphrased or invented label. The Reviewer re-reads the clause from source and
+     issues an automatic **FAIL for citation fraud** if it does not exist or does not
+     apply (Principle III). If no clause governs the change, say so explicitly
+     (`Standard clause: none — convention-only, see analysis`) rather than inventing one.
    - Mark the task checkbox done in `tasks.md`.
    - Cannot complete confidently → leave safe state + `DEV-STATUS: PARTIAL` annotation
      (Principle IV), entry in `wiki/exception-registry.md`, continue with independent tasks.

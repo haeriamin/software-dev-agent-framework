@@ -17,11 +17,11 @@ On launch it loads `CLAUDE.md` (the rules), the subagents in `.claude/agents/`, 
 One thing to run once, so the write-safety hooks fire on your OS:
 
 ```bash
-py tools\setup-hooks.py        # Windows
-python3 tools/setup-hooks.py   # macOS / Linux
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
+bash tools/setup-hooks.sh                                        # macOS / Linux
 ```
 
-That writes the OS-correct hook wiring into `.claude/settings.local.json` (machine-local, gitignored) — PowerShell scripts on Windows, bash scripts on macOS/Linux, since no single command works on all three. The read-only guard on `/standards/` and `/exemplars/` is declarative in `.claude/settings.json` and is already on before you run it.
+That writes the OS-correct hook wiring into `.claude/settings.local.json` (machine-local, gitignored) — PowerShell scripts on Windows, bash scripts on macOS/Linux, since no single command works on all three. Neither the setup nor the hooks need Python (the scripts use a JSON parser if one is around and a plain-shell fallback otherwise); there's also a `tools/setup-hooks.py` if you'd rather run it with Python. The read-only guard on `/standards/` and `/exemplars/` is declarative in `.claude/settings.json` and is already on before you run any of this.
 
 ## 3. First run (load the knowledge, once)
 ```

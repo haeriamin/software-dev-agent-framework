@@ -15,20 +15,23 @@ source-grounded verification and the human-only merge are the backstops.
 
 ## Platform setup (Windows / macOS / Linux)
 
-No single hook command works on every OS — Windows runs `py`/`powershell`, macOS/Linux run
-`python3`, and `bash` isn't on the Windows PATH outside Git Bash. So the per-OS wiring is
-generated once, into the gitignored `.claude/settings.local.json`, by a setup step:
+No single hook command works on every OS — Windows runs `powershell`, macOS/Linux run `bash`,
+and `bash` isn't on the Windows PATH outside Git Bash. So the per-OS wiring is generated once,
+into the gitignored `.claude/settings.local.json`, by a setup step:
 
 ```bash
 # Windows
-py tools\setup-hooks.py
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1
 # macOS / Linux
-python3 tools/setup-hooks.py
+bash tools/setup-hooks.sh
 ```
 
 It picks `powershell -File …​.ps1` on Windows and `bash …​.sh` on macOS/Linux, and also rebuilds
-`.codex/hooks.json` for Codex. Both script variants are kept in sync (`.ps1` parses JSON with
-`ConvertFrom-Json`; `.sh` resolves `python3`/`python`/`py`). Re-run it after switching OS.
+`.codex/hooks.json` for Codex. **No Python is required** — neither the setup nor the hooks need
+it. The `.ps1` scripts parse JSON with PowerShell's built-in `ConvertFrom-Json`; the `.sh` scripts
+use a JSON parser if one happens to be on PATH and a plain `grep`/`sed` fallback otherwise (the
+Bash guard scans the raw payload in fallback mode — it can only over-block, never under-block).
+There's also a `tools/setup-hooks.py` if you prefer Python. Re-run setup after switching OS.
 
 The committed `.claude/settings.json` carries **no** OS-specific commands — only the cross-platform
 `permissions.deny` guard on `/standards/` and `/exemplars/`, which is always on even before setup.

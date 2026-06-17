@@ -16,10 +16,10 @@ cd throughline
 codex                       # AGENTS.md + .codex/ assets load from the repo
 /hooks                      # trust the project's write-safety hooks (once)
 ```
-Wire the write-safety hooks for your OS once (this rebuilds `.codex/hooks.json` to use PowerShell on Windows or bash on macOS/Linux):
+Wire the write-safety hooks for your OS once (this rebuilds `.codex/hooks.json` to use PowerShell on Windows or bash on macOS/Linux; no Python needed):
 ```bash
-py tools\setup-hooks.py        # Windows
-python3 tools/setup-hooks.py   # macOS / Linux
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
+bash tools/setup-hooks.sh                                        # macOS / Linux
 ```
 Codex reads custom slash commands from `~/.codex/prompts/`, which is global rather than per-project, so expose the framework's commands by copying them once:
 ```bash
