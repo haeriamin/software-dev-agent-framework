@@ -110,15 +110,16 @@ bash tools/setup-hooks.sh                                        # mac/Linux ┘
 /dev.feature my-app "Add cursor pagination to the orders endpoint"        # build it
 ```
 
-### Five ways to use it
+### Ways to use it
 
-1. One command for the whole lifecycle: `/dev.feature` runs specify through review.
-2. Cheaper modes: `--micro` (implement, test, review) or `--express` (skip the optional approval pauses).
-3. Phase by phase, if you want the control: `/speckit.specify`, `clarify`, `plan`, `tasks`, `implement`.
-4. Single commands, out of band: `/dev.analyze`, `/dev.test`, `/dev.review`, `/dev.audit`.
-5. Knowledge only: ingest your standards and examples and use the skills ad hoc.
+1. Think first: `/dev.ideate "<rough idea>"` explores options and trade-offs before any spec (read-only; builds nothing).
+2. One command for the whole lifecycle: `/dev.feature` runs specify through review.
+3. Cheaper modes: `--micro` (implement, test, review) or `--express` (skip the optional approval pauses).
+4. Phase by phase, if you want the control: `/speckit.specify`, `clarify`, `plan`, `tasks`, `implement`.
+5. Single commands, out of band: `/dev.ideate`, `/dev.analyze`, `/dev.test`, `/dev.review`, `/dev.audit`.
+6. Knowledge only: ingest your standards and examples and use the skills ad hoc.
 
-Each one is spelled out in your tool's exact syntax in the [runtime guides](docs/runtimes/).
+Each one is spelled out in your tool's exact syntax in the [runtime guides](docs/runtimes/). Every slice also leaves a human-readable entry in `<target>/.throughline/CHANGELOG.md`, so each codebase carries its own record of what changed and why.
 
 ## For teams
 

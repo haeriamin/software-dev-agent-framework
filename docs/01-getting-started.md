@@ -16,13 +16,17 @@ cd throughline
 # Copilot: open the folder in VS Code — .github/ assets load automatically.
 # Claude Code: run `claude` in the folder — CLAUDE.md and .claude/ assets load automatically.
 # Codex (preview): run `codex` in the folder, then /hooks to trust; copy .codex/prompts/*.md to ~/.codex/prompts/.
+
+# One-time, to wire the write-safety hooks for your OS (Claude Code & Codex; Copilot needs nothing):
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
+bash tools/setup-hooks.sh                                        # macOS / Linux
 ```
 
-No build step. No services. The repo's markdown files *are* the framework.
+No build step, no services, no Python — the repo's markdown files *are* the framework, and the hooks run on PowerShell (Windows) or bash (macOS/Linux). The read-only guard on `/standards/` and `/exemplars/` is on even before you run setup-hooks.
 
 ## Slash syntax
 
-The two runtimes spell commands differently — same commands, same behavior:
+The three runtimes spell commands differently — same commands, same behavior:
 
 | Runtime | Syntax |
 |---------|--------|

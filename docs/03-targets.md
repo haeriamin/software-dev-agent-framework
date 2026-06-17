@@ -46,9 +46,12 @@ scaffold, then implementation (see [Building Features](04-building-features.md))
 |-------|---------|
 | `test_command` / `lint_command` | What the Tester and Implementer actually run — keep these accurate |
 | `complexity_class` | Default complexity for slices on this target |
+| `changelog` | `on` (default) / `off` — whether to maintain `<target>/.throughline/CHANGELOG.md` |
 | `conventions` | Free-text notes; the Implementer follows these where standards are silent |
 | `exceptions` | Exception-registry ids (EXC-NNN) that apply to this target |
 | `status` | `active` / `paused` / `archived` |
+
+Unless `changelog: off`, each slice leaves a human-readable entry in `<target>/.throughline/CHANGELOG.md` — written on the slice branch, so it merges with the change and the codebase keeps its own record of what the framework did and why.
 
 ## Safety rules
 

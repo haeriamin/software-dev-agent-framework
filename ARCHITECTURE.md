@@ -96,9 +96,9 @@ See `docs/02-concepts.md §Repository layout` for the full tree. Key invariants:
 | `/targets/**` | Orchestrator (via `/dev.target`) | All agents |
 | `/work-queue/**` | Orchestrator; Analyst (analyses) | All agents |
 | `/review-reports/**` | Reviewer, Tester, Auditor | All agents |
-| `<target>/**` | Implementer (source), Tester (tests) — inside an active slice only | Analyst, Reviewer, Auditor |
+| `<target>/**` | Implementer (source + `.throughline/CHANGELOG.md`), Tester (tests), Orchestrator (changelog verdict stamp) — inside an active slice only | Analyst, Reviewer, Auditor |
 
-Hooks at `.github/hooks/scripts/validate-immutable-paths.*` and `.claude/hooks/validate-immutable-paths.*` enforce the read-only paths at the tool-call boundary.
+Hooks at `.github/hooks/scripts/validate-immutable-paths.*` and `.claude/hooks/validate-immutable-paths.*` enforce the read-only paths at the tool-call boundary (wired per-OS by `tools/setup-hooks.*`; see §10.1).
 
 ---
 
@@ -117,12 +117,15 @@ test_command: "npm test"
 lint_command: "npm run lint"
 build_command: "npm run build"
 complexity_class: MEDIUM          # LOW | MEDIUM | HIGH | CRITICAL (default for slices)
+changelog: on                     # on | off — maintain <target>/.throughline/CHANGELOG.md
 conventions: |
   Repo-specific notes that override nothing but inform everything.
 exceptions: []                    # ids from wiki/exception-registry.md that apply here
 status: active                    # active | paused | archived
 registered: 2026-06-09
 ```
+
+**Target-side change record**: unless `changelog: off`, every slice that changes a target writes a human-readable entry to `<target>/.throughline/CHANGELOG.md` on the `sdd/<slice>` branch (so it merges atomically with the change and travels with the code). The Implementer adds the entry during `/dev.implement` (`Status: PENDING REVIEW`, with files + cited spec/standards); the Orchestrator stamps the terminal verdict at slice close. This is the only framework artifact written *inside* the target — everything else (specs, reports, decision records) stays in the framework repo.
 
 `/dev.target register <path>` creates this entry, probes the project (stack detection, git status, test runner), and generates:
 
@@ -136,6 +139,8 @@ registered: 2026-06-09
 ---
 
 ## 5. SDD Lifecycle
+
+Optionally, before any spec, `/dev.ideate "<rough idea>" [target]` runs a read-only, conversational exploration — distinct approaches with their trade-offs and risks, grounded in the target — and recommends a direction. It writes an ideation note and builds nothing; the lifecycle below still starts fresh at `/speckit.specify`.
 
 Each development slice is one spec-kit feature:
 
@@ -165,7 +170,7 @@ Each development slice is one spec-kit feature:
   ↓                                hook: after_analyze → optional /dev.audit
 ```
 
-Pre-packaged workflows (`.specify/workflows/`): `dev-feature` (existing codebase) and `dev-greenfield` (new project, inserts `/dev.scaffold` between tasks and implement). Both chain the phases with explicit review gates.
+Pre-packaged workflows (`.specify/workflows/`): `dev-feature` (existing codebase) and `dev-greenfield` (new project, inserts `/dev.scaffold` between tasks and implement), plus `dev-bugfix` (micro lane), `dev-explore` (read-only analysis), and `dev-review` (standalone gate). All chain their phases with explicit review gates and are listed in `workflow-registry.json`.
 
 ---
 
@@ -236,25 +241,26 @@ Portfolio-wide quality. Aggregates review reports across targets, identifies sys
 
 ## 7. Extension: Dev Commands
 
-`.specify/extensions/dev/` is a spec-kit extension. Its `extension.yml` declares the thirteen `/dev.*` commands, a `dev-config.yml` template for per-framework overrides, and hook bindings into the SDD lifecycle:
+`.specify/extensions/dev/` is a spec-kit extension. Its `extension.yml` declares the fourteen `/dev.*` commands, a `dev-config.yml` template for per-framework overrides, and hook bindings into the SDD lifecycle:
 
 - `before_plan` → `/dev.analyze` (optional)
 - `before_implement` → `/dev.review` (optional — drift check on prior artifacts)
 - `after_implement` → `/dev.review` (**mandatory** — Reviewer gate; runbook invokes `/dev.test` first)
 - `after_analyze` → `/dev.audit` (optional)
 
-The thirteen commands:
+The fourteen commands:
 
 | Command | Persona | Writes |
 |---------|---------|--------|
-| `/dev.feature` | Orchestrator | One-shot pipeline — drives all phase commands below; empty targets auto-run greenfield mode (+design +scaffold); queue state, log |
+| `/dev.feature` | Orchestrator | One-shot pipeline — drives all phase commands below; empty targets auto-run greenfield mode (+design +scaffold); queue state, log; stamps the target changelog verdict at slice close |
 | `/dev.target` | Orchestrator | `targets/<id>.yml`, `targets/<id>.code-workspace`, log |
 | `/dev.ingest-standards` | Archivist | `wiki/standards-summary.md`, concept pages, log |
 | `/dev.ingest-exemplars` | Archivist | `wiki/pattern-library.md`, concept pages, log |
+| `/dev.ideate` | Analyst | `work-queue/pending/<topic>-ideation.md`, log — read-only pre-spec brainstorming; explores options/trade-offs/risks, recommends a direction, builds nothing |
 | `/dev.analyze` | Analyst | `work-queue/in-progress/<slice>-analysis.md`, log |
 | `/dev.design` | Architect | `specs/NNN-*/design.md`, `wiki/decision-registry.md` entry, log |
 | `/dev.scaffold` | Implementer | target project skeleton (greenfield), scaffold report, log |
-| `/dev.implement` | Implementer | target source on branch `sdd/<slice>`, Decision Records, log |
+| `/dev.implement` | Implementer | target source on branch `sdd/<slice>`, Decision Records, `<target>/.throughline/CHANGELOG.md` entry, log |
 | `/dev.test` | Tester | target test files, `review-reports/<target>/<slice>-tests.md`, log |
 | `/dev.review` | Reviewer | `review-reports/<target>/<slice>-review.md`, log |
 | `/dev.audit` | Auditor | `review-reports/portfolio-summary.md`, recommendations, log |
@@ -313,14 +319,21 @@ Behavioral instructions in `.github/instructions/` are loaded by agents at runti
 
 ### 10.1 Tool-call hooks
 
-**Copilot** (`.github/hooks/hooks.json`) and **Claude Code** (`.claude/settings.json`) wire the same three scripts (shipped as both `.sh` and `.ps1`):
+**Copilot**, **Claude Code**, and **Codex** wire the same four guard scripts (shipped as both `.sh` and `.ps1`):
 
 | Hook | Event | Purpose |
 |------|-------|---------|
 | `validate-immutable-paths` | PreToolUse (file-write tools) | Blocks writes to `/standards/` and `/exemplars/` |
-| `validate-bash-safety` | PreToolUse (Bash) | Blocks shell writes touching `/standards/` `/exemplars/`, and `git push`/`git merge` (human-only) — closes the shell bypass of the file-write hook |
+| `validate-bash-safety` | PreToolUse (Bash) | Blocks shell writes touching `/standards/` `/exemplars/`, and `git push`/`git merge` (human-only, including option-prefixed forms like `git -C <dir> push`) — closes the shell bypass of the file-write hook |
 | `log-tool-use` | PostToolUse | Auto-appends file writes to `wiki/log.md` (shell-mediated changes are logged by the acting agent per runbook) |
 | `check-code-quality` | PostToolUse | Lightweight lint on written source files (TODO-without-annotation, merge-conflict markers, debug statements) |
+
+**Cross-platform, no extra runtime.** No single hook command works on every OS (Windows runs `powershell`; macOS/Linux run `bash`; `bash` isn't on the Windows PATH outside Git Bash), so the per-OS wiring is generated once by `tools/setup-hooks.{ps1,sh,py}`:
+- **Claude Code** — written into the gitignored `.claude/settings.local.json` (the committed `.claude/settings.json` keeps only the cross-platform `permissions.deny` guard on `/standards/`+`/exemplars/`, always on even before setup).
+- **Codex** — `.codex/hooks.json`, regenerated for the host OS.
+- **Copilot** — `.github/hooks/hooks.json` already carries a per-OS `windows` override in one file; no setup needed.
+
+**Python is not required.** The `.ps1` guards parse the hook JSON with PowerShell's built-in `ConvertFrom-Json`; the `.sh` guards use a JSON parser only if one is present and fall back to `grep`/`sed` otherwise (a broken/stub interpreter falls back rather than failing open). `setup-hooks` ships as PowerShell, bash, and Python variants.
 
 Hooks raise the cost of violation; they are string-matched guards, not a sandbox. The
 Reviewer's source-grounded verification and the human-only merge are the real backstops.
@@ -339,6 +352,11 @@ Merged from the `dev` extension. Of note:
 - `.specify/workflows/speckit/workflow.yml` — generic SDD cycle.
 - `.specify/workflows/dev-feature/workflow.yml` — feature slice on an existing target with `/dev.*` hooks engaged and explicit review gates.
 - `.specify/workflows/dev-greenfield/workflow.yml` — new project: target registration → spec → plan (+design) → tasks → scaffold → implement → review → audit.
+- `.specify/workflows/dev-bugfix/workflow.yml` — the micro lane (implement → test → review) for a contained fix, with the abort-to-standard escape.
+- `.specify/workflows/dev-explore/workflow.yml` — read-only `/dev.analyze` pass before changing an area.
+- `.specify/workflows/dev-review/workflow.yml` — the standalone review gate on a change that already exists.
+
+All workflows are registered in `.specify/workflows/workflow-registry.json`. (Pre-spec ideation is the `/dev.ideate` command rather than a workflow — it is a single read-only step, not a multi-phase cycle.)
 
 ---
 
@@ -676,9 +694,12 @@ Agent versions logged in `wiki/log.md` on each update; rollback by reverting the
 | Register a project | `/dev.target register <path> [--new]` / `/dev:target register <path> [--new]` |
 | Add new standards doc | Place in `/standards/` → `/dev.ingest-standards` |
 | Add new exemplar | Place in `/exemplars/` → `/dev.ingest-exemplars` |
+| Brainstorm before building | `/dev.ideate "<rough idea>" [target]` / `/dev:ideate "<rough idea>" [target]` (read-only; recommends a direction) |
+| Wire write-safety hooks (once) | `tools/setup-hooks.ps1` (Windows) / `tools/setup-hooks.sh` (macOS/Linux) — no Python needed |
 | Start a development slice | `/speckit.specify "<scope>"` (then `clarify` → `plan` → `tasks` → `implement`) |
 | One-shot feature lifecycle | workflow `dev-feature` (`.specify/workflows/`; runner or manual) |
 | One-shot greenfield project | workflow `dev-greenfield` (`.specify/workflows/`; runner or manual) |
+| Contained fix / explore / standalone review | workflows `dev-bugfix` / `dev-explore` / `dev-review` |
 | Analyze a target (out-of-band) | `/dev.analyze <target-id> [scope]` |
 | Review a slice (out-of-band) | `/dev.review <slice-id>` |
 | Audit the portfolio | `/dev.audit` |

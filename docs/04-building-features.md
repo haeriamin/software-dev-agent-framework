@@ -71,11 +71,16 @@ Or phase by phase, if you want to drive each step:
 /speckit.implement
 ```
 
+## Before a slice: ideate
+
+Not sure what to build yet? `/dev.ideate "<rough idea>" my-app` thinks it through with you — a few distinct approaches with their trade-offs and risks, grounded in your code — and recommends a direction. It's read-only: it writes an ideation note and builds nothing. When you've chosen, start a slice with `/dev.feature` (or `/speckit.specify`).
+
 ## Out-of-band (no slice)
 
 For quick questions and checks, commands work standalone:
 
 ```bash
+/dev.ideate "<rough idea>" my-app    # brainstorm options before committing to a spec
 /dev.analyze my-app src/services     # what's in there, conventions, risks
 /dev.review <slice-id>               # re-run the gate on a past slice
 /dev.audit                           # portfolio health

@@ -88,9 +88,12 @@ ways: design becomes mandatory (step 5) and scaffold runs before implementation 
 11. **Stamp the target change record.** Update this slice's entry in
     `<target>/.throughline/CHANGELOG.md` (created by `/dev.implement`): set `Status` to the
     terminal verdict (`PASS` / `CONDITIONAL_PASS` / `FAIL`, with confidence) and add the merge
-    note. On a clean FAIL after retries, record `FAIL — escalated`. This is a target write on the
-    slice branch; it is lifecycle bookkeeping, so the Orchestrator owns it (the Reviewer stays
-    read-only on the target). Skip if the target sets `changelog: off`.
+    note. On a clean FAIL after retries, record `FAIL — escalated`. **Commit this update onto the
+    `sdd/<slice>` branch** (e.g. `git -C <target> commit -am "throughline: <slice> <verdict>"`) so
+    the stamped verdict travels with the branch into the human's merge — an uncommitted stamp would
+    be lost and the merged record would read `PENDING REVIEW`. This is a target write on the slice
+    branch; it is lifecycle bookkeeping, so the Orchestrator owns it (the Reviewer stays read-only
+    on the target). Never push or merge. Skip if the target sets `changelog: off`.
 12. **Final report** (single message):
     - Verdict + confidence with the three sub-scores
     - Branch name (`sdd/<slice>`) + exact human merge instructions + rollback procedure

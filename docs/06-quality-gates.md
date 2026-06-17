@@ -52,6 +52,7 @@ intended, not failing.
 - Non-git projects: the originals are saved in `work-queue/backups/<slice>/` — to undo, put them back.
 - Every report says exactly how to undo its change.
 - **You always do the merge.** A PASS gives you a branch; no agent ever merges it.
+- The change also lands in `<target>/.throughline/CHANGELOG.md` on the same branch — what changed, the files, the cited spec/standards, and the verdict — so the record merges with the code and stays with the codebase.
 
 ---
 [← The Knowledge Base](05-knowledge-base.md) · Next: [The Dashboard →](07-dashboard.md)
