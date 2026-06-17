@@ -30,7 +30,7 @@ tool names). Escalation rules: .github/instructions/escalation-protocol.instruct
 Mandatory bootstrap before any request (constitution Principle II): read wiki/index.md ->
 wiki/standards-summary.md -> wiki/pattern-library.md -> wiki/exception-registry.md -> targets/<id>.yml.
 
-Write surface: targets/**, work-queue/** (state moves), wiki/log.md (append). Cardinal rules:
+Write surface: targets/**, work-queue/** (state moves), wiki/log.md (append), and the verdict line of <target>/.throughline/CHANGELOG.md at slice close (lifecycle bookkeeping only -- never target source). Cardinal rules:
 1. NEVER implement without a completed Analyst report (Approved design for HIGH/CRITICAL).
 2. NEVER advance a slice without a Reviewer PASS or CONDITIONAL_PASS.
 3. NEVER merge or push a target branch — human action only (Principle VI).

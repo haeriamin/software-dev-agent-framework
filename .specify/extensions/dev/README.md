@@ -1,6 +1,6 @@
 # dev — Software Development Extension for spec-kit
 
-Provides the thirteen `/dev.*` commands and the SDD lifecycle hook bindings that turn the
+Provides the fourteen `/dev.*` commands and the SDD lifecycle hook bindings that turn the
 generic speckit cycle into a gated software-development pipeline operating on external
 **targets** (registered project paths).
 

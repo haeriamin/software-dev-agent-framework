@@ -577,38 +577,38 @@ Adapters:
 | Hooks | `.github/hooks/hooks.json` | `.claude/settings.json` | `.codex/hooks.json` | Same scripts; Codex matchers use `apply_patch`/`Bash` |
 
 The **Codex adapter** (`.codex/`) is a preview third runtime: 8 personas (`.codex/agents/*.toml`),
-21 commands (`.codex/prompts/*.md`, copied into `~/.codex/prompts/`), `AGENTS.md`, and
+22 commands (`.codex/prompts/*.md`, copied into `~/.codex/prompts/`), `AGENTS.md`, and
 `.codex/hooks.json`. Two runtime behaviours are pending verification before it is on par with the
 other two — autonomous isolated sub-agent spawning, and the `apply_patch` hook payload — see
 `.codex/README.md` and `.codex/VERIFICATION.md`.
 
-### File-count asymmetry (28 Copilot agents vs 8 Claude subagents — intentional)
+### File-count asymmetry (30 Copilot agents vs 8 Claude subagents — intentional)
 
-Both runtimes have exactly **21 commands** and **8 personas**; they just package them differently:
+Copilot and Claude Code each have exactly **22 commands** and **8 personas**; they just package them differently:
 
 | Layer | Copilot | Claude Code |
 |-------|---------|-------------|
-| Command body | `.github/agents/<cmd>.agent.md` (21) — Copilot prompt files are 3-line pointers and cannot carry content | `.claude/commands/**/<cmd>.md` (21) — the command file IS the body |
+| Command body | `.github/agents/<cmd>.agent.md` (22) — Copilot prompt files are 3-line pointers and cannot carry content | `.claude/commands/**/<cmd>.md` (22) — the command file IS the body |
 | Persona | `.github/agents/<persona>.agent.md` (8) | `.claude/agents/<persona>.md` (8) |
 
-So Copilot needs 20 extra agent files purely as slash-command bodies; in Claude Code that
-content lives in the command files, which adopt the persona subagent and follow the same
-canonical runbook. Do NOT mirror the 20 command agents as Claude subagents: every subagent
-description is loaded into context each session, so 20 redundant entries would cost tokens
-on every interaction while adding zero capability.
+So Copilot carries a command-body agent file per command (22 of them) on top of the 8 persona
+agents — 30 in all; in Claude Code that command content lives in the command files, which adopt
+the persona subagent and follow the same canonical runbook. Do NOT mirror the command agents as
+Claude subagents: every subagent description is loaded into context each session, so redundant
+entries would cost tokens on every interaction while adding zero capability.
 
 Rules for contributors:
 1. Never put substantive procedure in an adapter file — put it in the runbook and reference it.
 2. When adding a command: runbook → extension.yml → Copilot agent + prompt → Claude command → Codex prompt → README tables.
 3. When editing a skill: edit `.github/skills/<name>/SKILL.md`, then copy to `.claude/skills/<name>/SKILL.md` (they must stay byte-identical; `/dev.lint-wiki` checks this).
 
-Slash syntax differs by runtime: `/dev.analyze` (Copilot and Codex) ≡ `/dev:analyze` (Claude Code). Docs use the Copilot form; the mapping is mechanical.
+Slash syntax differs by runtime: `/dev:analyze` (Claude Code) ≡ `/dev.analyze` (Copilot and Codex). Docs default to the Claude Code colon form; the mapping is mechanical.
 
 ### Token economy
 
 Daily LLM cost is dominated by always-loaded context, so the framework keeps it deliberately thin:
 
-- `CLAUDE.md` and `.github/copilot-instructions.md` carry only the non-negotiables, gates, and pointers (~40–50 lines each). Command/skill/agent descriptions are NOT duplicated there — both runtimes surface them automatically from frontmatter.
+- `CLAUDE.md`, `.github/copilot-instructions.md`, and `AGENTS.md` (Codex) carry only the non-negotiables, gates, and pointers (~40–50 lines each). Command/skill/agent descriptions are NOT duplicated there — all three runtimes surface them automatically from frontmatter.
 - Everything else loads on demand: runbooks only when a command runs, skills only when invoked, instruction files only for the persona that needs them.
 - The bootstrap reads wiki *summaries* (standards-summary, pattern-library), not `/standards/` source — full source is read only by targeted `standards-retrieval` calls and the Reviewer's independence check.
 - Repetition of a rule across files is reserved for constitutional invariants (defense in depth); everything else has one home and pointers.

@@ -1,6 +1,6 @@
 <!-- Codex CLI adapter for /dev.lint-wiki — generated from .claude/commands\dev\lint-wiki.md. Filename (dev.lint-wiki.md) is the slash command; install by copying this folder's *.md into ~/.codex/prompts/ (Codex reads custom prompts from $CODEX_HOME/prompts). -->
 ---
-description: "Wiki health check including dual-runtime skill parity"
+description: "Wiki health check including .github <-> .claude skill parity"
 argument-hint: "[--write]"
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: "Wiki health check including dual-runtime skill parity"
+description: "Wiki health check including .github <-> .claude skill parity"
 argument-hint: "[--write]"
 ---
 

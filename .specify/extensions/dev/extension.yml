@@ -29,6 +29,9 @@ provides:
     - name: dev.ingest-exemplars
       file: commands/dev.ingest-exemplars.md
       description: "Ingest /exemplars into wiki/pattern-library.md"
+    - name: dev.ideate
+      file: commands/dev.ideate.md
+      description: "Read-only pre-spec ideation: explore options/trade-offs/risks, recommend a direction, build nothing"
     - name: dev.analyze
       file: commands/dev.analyze.md
       description: "Run Analyst on a target codebase or scope; produce analysis report"

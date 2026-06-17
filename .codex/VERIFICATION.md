@@ -43,7 +43,7 @@ Watch the trace (`codex` shows tool calls / spawns; or open the Traces dashboard
 - [ ] **`sandbox_mode` holds** — Reviewer/Tester cannot write outside their declared surfaces.
 
 ## 3. Verdict
-- **All four boxes pass →** topology holds and the adapter (all 8 personas + 21 commands + hooks +
+- **All four boxes pass →** topology holds and the adapter (all 8 personas + 22 commands + hooks +
   `AGENTS.md`) is complete. Finish the two remaining wiring items from `.codex/README.md`: register
   each persona's skills via `skills.config` (item 3) and confirm the `apply_patch` hook payload
   (item 2). Then Codex is a fully supported third runtime.

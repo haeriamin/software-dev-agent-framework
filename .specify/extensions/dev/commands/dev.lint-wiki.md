@@ -17,7 +17,7 @@
    a rule present in `wiki/standards-summary.md`.
 6. **Log integrity**: `wiki/log.md` entries are chronologically ordered and parse
    (timestamp | agent | command | target | verdict | summary | artifacts).
-7. **Skill parity (dual-runtime)**: `.github/skills/<name>/SKILL.md` is byte-identical
+7. **Skill parity (`.github` ↔ `.claude`)**: `.github/skills/<name>/SKILL.md` is byte-identical
    to `.claude/skills/<name>/SKILL.md` for every skill.
 8. **Exception registry hygiene**: no PENDING-HUMAN entry older than 30 days without a
    log reference.

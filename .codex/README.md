@@ -9,7 +9,7 @@ Per ARCHITECTURE.md §14 ("one brain, N adapters"), the canonical content — ru
 | Piece | Location | Notes |
 |---|---|---|
 | 8 personas | `.codex/agents/*.toml` | `developer_instructions` = the shared persona body; `tools`→`sandbox_mode` |
-| 21 commands | `.codex/prompts/*.md` | `/dev.*` + `/speckit.*`; generated from the canonical Claude command bodies |
+| 22 commands | `.codex/prompts/*.md` | `/dev.*` + `/speckit.*`; generated from the canonical Claude command bodies |
 | Global rules | `../AGENTS.md` | peer to `CLAUDE.md` / `.github/copilot-instructions.md` (same non-negotiables) |
 | Hooks | `.codex/hooks.json` | read-only `/standards/`+`/exemplars/` guard, git push/merge guard, `wiki/log.md` logger, quality lint — reuses the shipped scripts |
 | Config | `.codex/config.toml` | project-doc + fallback to `CLAUDE.md`; pointers |

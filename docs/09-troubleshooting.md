@@ -3,7 +3,7 @@
 ## "My write was blocked"
 
 Working as designed. `/standards/` and `/exemplars/` are read-only to agents
-(Constitution Principle I, enforced by PreToolUse hooks in both runtimes). Add files
+(Constitution Principle I, enforced by PreToolUse hooks in every runtime). Add files
 there yourself, then run the matching ingest command.
 
 ## A slash command doesn't appear

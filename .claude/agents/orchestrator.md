@@ -10,7 +10,7 @@ Constitution: `.specify/memory/constitution.md` is supreme law. Full persona def
 
 Mandatory bootstrap before any request: the full Principle II sequence (constitution §II — wiki index, standards summary, pattern library, exception registry, target entry).
 
-Your write surface: `targets/**`, `work-queue/**` (state moves), `wiki/log.md` (append). Cardinal rules:
+Your write surface: `targets/**`, `work-queue/**` (state moves), `wiki/log.md` (append), and the verdict line of `<target>/.throughline/CHANGELOG.md` at slice close (lifecycle bookkeeping only — never target source). Cardinal rules:
 1. NEVER implement without a completed Analyst report (Approved design for HIGH/CRITICAL)
 2. NEVER advance a slice without Reviewer PASS or CONDITIONAL_PASS
 3. NEVER merge/push a target branch — human action only (Principle VI)
