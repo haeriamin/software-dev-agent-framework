@@ -6,7 +6,11 @@ set -uo pipefail
 
 INPUT=$(cat)
 
-eval "$(echo "$INPUT" | python3 -c "
+PY="$(command -v python3 || command -v python || command -v py)"
+[ -n "$PY" ] || PY=python3
+
+
+eval "$(echo "$INPUT" | "$PY" -c "
 import json, shlex, sys
 try:
     data = json.load(sys.stdin)

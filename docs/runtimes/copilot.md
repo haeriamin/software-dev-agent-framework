@@ -10,7 +10,7 @@ Copilot uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
 ```bash
 git clone <repo-url> throughline
 ```
-Open the framework folder in VS Code. The `.github/` assets load on their own: the agents in `.github/agents/`, the instructions in `.github/copilot-instructions.md`, and the write-safety hooks in `.github/hooks/hooks.json`. There's no build step.
+Open the framework folder in VS Code. The `.github/` assets load on their own: the agents in `.github/agents/`, the instructions in `.github/copilot-instructions.md`, and the write-safety hooks in `.github/hooks/hooks.json`. There's no build step. The hooks file already carries a per-OS `windows` override (PowerShell on Windows, bash on macOS/Linux), so there's nothing to wire by hand — unlike the Claude Code and Codex adapters, which need a one-time `tools/setup-hooks.py` run.
 
 ## 3. First run (load the knowledge, once)
 In Copilot Chat:

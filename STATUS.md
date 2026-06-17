@@ -16,8 +16,8 @@ Before you rely on something, check which row it is in.
 
 | Part | How strong |
 |------|------------|
-| `/standards/` and `/exemplars/` are read-only (file + shell hooks) | **Enforced** — blocked by a hook; a determined agent could still find a way, but not by accident |
-| Agents cannot `git push` or `merge` (shell hook + you merge) | **Enforced** |
+| `/standards/` and `/exemplars/` are read-only (file + shell hooks) | **Enforced** — blocked by a hook; a determined agent could still find a way, but not by accident. Works on Windows, macOS, and Linux (run `tools/setup-hooks.py` once; the declarative read-only guard is on even before that) |
+| Agents cannot `git push` or `merge` (shell hook + you merge) | **Enforced** — on all three OSes |
 | Rules that name a `Tool:` (linter, security scan, audit) | **Enforced** — uses the real tool's output |
 | Rules without a `Tool:` | **Only instructed** — the model judges them; results can vary |
 | Confidence score, startup reads, citations, notes | **Only instructed** — backed by the review step, not by a program |

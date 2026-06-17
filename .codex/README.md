@@ -36,7 +36,7 @@ Then drive it exactly like the other runtimes: `/dev.feature <target> "<desc>"`,
 | Per-tool perms | `tools: Read, Write, …` | `tools: [read/readFile, …]` | `sandbox_mode` (`read-only` / `workspace-write`) — coarser; read/write discipline stays in the persona text |
 | Global rules | `CLAUDE.md` | `.github/copilot-instructions.md` | `AGENTS.md` |
 | Command | `.claude/commands/**/<cmd>.md` | `.github/agents/<cmd>.agent.md` + prompt | `.codex/prompts/<ns>.<cmd>.md` |
-| Hooks | `.claude/settings.json` | `.github/hooks/hooks.json` | `.codex/hooks.json` (same scripts; matchers use Codex tool names) |
+| Hooks | `.claude/settings.local.json` (wired by `tools/setup-hooks.py`) | `.github/hooks/hooks.json` (per-OS `windows` override) | `.codex/hooks.json` (rebuilt by `tools/setup-hooks.py`; same scripts, Codex tool-name matchers) |
 | Agent-to-agent | subagents | `handoffs:` frontmatter | explicit spawn (no declarative graph — stated in prose) |
 
 `sandbox_mode` by persona: all default to `workspace-write` because each writes *some* artifact

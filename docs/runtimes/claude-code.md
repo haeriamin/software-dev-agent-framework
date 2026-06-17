@@ -12,7 +12,16 @@ git clone <repo-url> throughline
 cd throughline
 claude                      # CLAUDE.md and .claude/ assets load automatically
 ```
-On launch it loads `CLAUDE.md` (the rules), the subagents in `.claude/agents/`, the commands in `.claude/commands/`, and the write-safety hooks in `.claude/settings.json`. There's no build step.
+On launch it loads `CLAUDE.md` (the rules), the subagents in `.claude/agents/`, and the commands in `.claude/commands/`. There's no build step.
+
+One thing to run once, so the write-safety hooks fire on your OS:
+
+```bash
+py tools\setup-hooks.py        # Windows
+python3 tools/setup-hooks.py   # macOS / Linux
+```
+
+That writes the OS-correct hook wiring into `.claude/settings.local.json` (machine-local, gitignored) — PowerShell scripts on Windows, bash scripts on macOS/Linux, since no single command works on all three. The read-only guard on `/standards/` and `/exemplars/` is declarative in `.claude/settings.json` and is already on before you run it.
 
 ## 3. First run (load the knowledge, once)
 ```
