@@ -17,7 +17,7 @@
 # Codex personas are TOML; pin LF so the generator's output stays byte-stable across OSes.
 *.toml text eol=lf
 
-# Adapter source of truth (.specify/adapters/source + profiles). The generators parse these with
+# Adapter source of truth (.throughline/adapters/source + profiles). The generators parse these with
 # awk/PowerShell; a stray CR on a Windows checkout would leak into generated output and break the
 # convert.ps1 / convert.sh byte-parity that CI enforces. Keep them LF everywhere.
 *.persona text eol=lf

@@ -18,7 +18,7 @@ Loads: `.kimi/AGENTS.md`, `.kimi/personas/`, `.kimi/workflows/`, `.kimi/config.t
 Ask Kimi to follow Throughline phases (or open `.kimi/workflows/dev.feature.md`):
 
 ```
-/speckit.constitution
+/throughline.constitution
 /dev.ingest-standards
 /dev.ingest-exemplars
 /dev.target register path/to/my-app

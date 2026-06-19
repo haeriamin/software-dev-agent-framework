@@ -16,7 +16,7 @@ You describe a change. Throughline turns it into a tested, independently reviewe
 
 ## What it is
 
-Throughline is a spec-driven, multi-agent layer that sits on top of [spec-kit](https://github.com/github/spec-kit) and drives your AI coding tool. You describe a change; a team of eight single-purpose agents specs it, plans it, writes it on a branch, tests it, and an independent reviewer checks it against your standards before anyone calls it done. Nothing merges without you. The process and the knowledge live in this repo. Your product code never does.
+Throughline is a spec-driven, multi-agent layer that drives your AI coding tool. You describe a change; a team of eight single-purpose agents specs it, plans it, writes it on a branch, tests it, and an independent reviewer checks it against your standards before anyone calls it done. Nothing merges without you. The process and the knowledge live in this repo. Your product code never does.
 
 ## What it's good for (and what it's not)
 
@@ -89,9 +89,9 @@ Close to nothing. Throughline is mostly markdown the model reads; the engine is 
 
 - **git** — for the reversible per-change branches (`sdd/<slice>`, [explained above](#how-it-works)) and to read your target's state.
 - **One AI coding tool** — GitHub Copilot, Claude Code, Codex, or Cursor (or a rules-only tool like Aider/Windsurf). That's the engine.
-- That's it. spec-kit isn't a separate install (its commands and its bash + PowerShell helper scripts ship inside `.specify/`), and the write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
+- That's it. Everything ships inside `.throughline/` (lifecycle commands, agent runbooks, bash + PowerShell helper scripts). Write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
 
-So on any supported tool, on Windows/macOS/Linux: clone, run `tools/install.*` to generate adapters from `.specify/adapters/source/` and wire hooks, then go. Generated tool folders (`.claude/`, `.cursor/`, `.github/agents/`, etc.) are **not** in git — install is required after every fresh clone.
+So on any supported tool, on Windows/macOS/Linux: clone, run `tools/install.*` to generate adapters from `.throughline/adapters/source/` and wire hooks, then go. Generated tool folders (`.claude/`, `.cursor/`, `.github/agents/`, etc.) are **not** in git — install is required after every fresh clone.
 
 ## Getting started
 
@@ -126,7 +126,7 @@ bash tools/install.sh                                        # Git Bash (same sc
 # macOS / Linux:
 bash tools/install.sh
 # open in VS Code (Copilot), or run `claude` (Claude Code), `codex` (Codex), or reload Cursor
-/speckit:constitution && /dev:ingest-standards && /dev:ingest-exemplars   # one-time: load the rules
+/throughline:constitution && /dev:ingest-standards && /dev:ingest-exemplars   # one-time: load the rules
 /dev:target register path/to/my-app                                       # point at your code
 /dev:feature my-app "Add cursor pagination to the orders endpoint"        # build it
 ```
@@ -136,7 +136,7 @@ bash tools/install.sh
 1. Think first: `/dev:ideate "<rough idea>"` explores options and trade-offs before any spec (read-only; builds nothing).
 2. One command for the whole lifecycle: `/dev:feature` runs specify through review.
 3. Cheaper modes: `--micro` (implement, test, review) or `--express` (skip the optional approval pauses).
-4. Phase by phase, if you want the control: `/speckit:specify`, `clarify`, `plan`, `tasks`, `implement`.
+4. Phase by phase, if you want the control: `/throughline:specify`, `/throughline:clarify`, `/throughline:plan`, `/throughline:tasks`, `/throughline:implement`.
 5. Single commands, out of band: `/dev:ideate`, `/dev:analyze`, `/dev:test`, `/dev:review`, `/dev:audit`.
 6. Knowledge only: ingest your standards and examples and use the skills ad hoc.
 
@@ -159,8 +159,8 @@ Does it save tokens? Per task, no, because it runs more steps. Over time it tend
 
 | Folder | What's inside |
 |--------|---------------|
-| `.specify/` | The engine: constitution, command runbooks, templates, workflows, and the adapter source of truth (`.specify/adapters/`) |
-| `.github/` · `.claude/` · `.codex/` · `.cursor/` | The per-tool adapters (generated from `.specify/adapters/source/`), plus hooks (CI lives in `.github/`) |
+| `.throughline/` | The engine: constitution, command runbooks, templates, workflows, and the adapter source of truth (`.throughline/adapters/`) |
+| `.github/` · `.claude/` · `.codex/` · `.cursor/` | The per-tool adapters (generated from `.throughline/adapters/source/`), plus hooks (CI lives in `.github/`) |
 | `standards/` · `exemplars/` | Your rules and example code, the read-only inputs you write |
 | `wiki/` | What the agents remember, plus an append-only log of everything they do |
 | `specs/` · `work-queue/` · `review-reports/` | Per-task files and status |
@@ -170,6 +170,6 @@ Does it save tokens? Per task, no, because it runs more steps. Over time it tend
 
 ## More
 
-[User guide](docs/README.md) · [Runtime guides](docs/runtimes/) · [Commands](COMMANDS.md) · [Architecture](ARCHITECTURE.md) · [Status](STATUS.md) · [Contributing](CONTRIBUTING.md) · [Constitution](.specify/memory/constitution.md)
+[User guide](docs/README.md) · [Runtime guides](docs/runtimes/) · [Commands](COMMANDS.md) · [Architecture](ARCHITECTURE.md) · [Status](STATUS.md) · [Contributing](CONTRIBUTING.md) · [Constitution](.throughline/memory/constitution.md)
 
 MIT, see [LICENSE](LICENSE). The standards and examples that ship are starter seeds; swap in your own.

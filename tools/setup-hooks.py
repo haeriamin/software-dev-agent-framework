@@ -136,7 +136,7 @@ def wire_cursor(root):
     guard-script hiccup never locks the session; flip to true once .cursor/VERIFICATION.md passes.
     """
     cursor_dir = os.path.join(root, ".cursor")
-    template = os.path.join(root, ".specify", "adapters", "generated", "cursor", "hooks.template.json")
+    template = os.path.join(root, ".throughline", "adapters", "generated", "cursor", "hooks.template.json")
     if not (os.path.isdir(cursor_dir) and os.path.exists(template)):
         return None
     with open(template, encoding="utf-8") as f:
@@ -153,7 +153,7 @@ def wire_cursor(root):
 def wire_kimi(root):
     """Install .kimi/config.toml from the staged Kimi hooks template."""
     kimi_dir = os.path.join(root, ".kimi")
-    template = os.path.join(root, ".specify", "adapters", "generated", "kimi", "hooks.template.toml")
+    template = os.path.join(root, ".throughline", "adapters", "generated", "kimi", "hooks.template.toml")
     agents_md = os.path.join(kimi_dir, "AGENTS.md")
     if not (os.path.exists(agents_md) and os.path.exists(template)):
         return None
@@ -180,7 +180,7 @@ def wire_kimi(root):
 def wire_antigravity(root):
     """Install .agents/hooks.json from the staged Antigravity template."""
     agents_dir = os.path.join(root, ".agents")
-    template = os.path.join(root, ".specify", "adapters", "generated", "antigravity", "hooks.template.json")
+    template = os.path.join(root, ".throughline", "adapters", "generated", "antigravity", "hooks.template.json")
     gemini = os.path.join(root, "GEMINI.md")
     if not (os.path.exists(gemini) and os.path.exists(template)):
         return None

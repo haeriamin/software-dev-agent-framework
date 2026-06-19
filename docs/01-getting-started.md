@@ -24,7 +24,7 @@ powershell -ExecutionPolicy Bypass -File tools\install.ps1 -List
 powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool claude
 ```
 
-The installer runs `tools/convert` (renders thin adapters from `.specify/adapters/source/`) and
+The installer runs `tools/convert` (renders thin adapters from `.throughline/adapters/source/`) and
 `tools/setup-hooks` (per-OS hook wiring). Copilot needs no extra hook step — its hooks file already
 carries a per-OS override. Re-run `tools/setup-hooks.{ps1,sh}` alone if you switch OS later.
 
@@ -38,8 +38,8 @@ Tools spell commands differently — same commands, same behavior:
 
 | Tool | Syntax |
 |------|--------|
-| Claude Code | `/dev:analyze`, `/speckit:specify` |
-| Copilot, Codex, Cursor | `/dev.analyze`, `/speckit.specify` |
+| Claude Code | `/dev:analyze`, `/throughline:specify` |
+| Copilot, Codex, Cursor | `/dev.analyze`, `/throughline` |
 | Aider, Windsurf | no slash commands — adopt personas from the rules bundle |
 
 Docs default to the Claude Code colon form. The mapping is mechanical. Full per-host walkthroughs:
@@ -48,7 +48,7 @@ Docs default to the Claude Code colon form. The mapping is mechanical. Full per-
 ## First run (one time)
 
 ```bash
-/speckit:constitution        # 1. review the framework's law; fill the Ratified date
+/throughline:constitution        # 1. review the framework's law; fill the Ratified date
 /dev:ingest-standards        # 2. compile /standards/ into the wiki
 /dev:ingest-exemplars        # 3. compile /exemplars/ into the pattern library
 ```

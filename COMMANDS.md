@@ -1,7 +1,7 @@
 # Command Reference
 
 Every command available in the framework, for new users and agents. Canonical procedure
-for each `/dev.*` command lives in `.specify/extensions/dev/commands/<command>.md`.
+for each `/dev.*` command lives in `.throughline/extensions/dev/commands/<command>.md`.
 
 **Slash syntax**: this file writes the **Claude Code colon form** (`/dev:analyze`), the default
 across the docs. Copilot, Codex, and Cursor use the dot form (`/dev.analyze`); the mapping is
@@ -12,7 +12,7 @@ mechanical.
 ## One-time setup
 
 Pick your tool and run the installer from the repo root. It generates the thin adapter files from
-`.specify/adapters/source/` and wires hooks for your OS.
+`.throughline/adapters/source/` and wires hooks for your OS.
 
 ```bash
 bash tools/install.sh --list                 # Git Bash / macOS / Linux
@@ -43,22 +43,24 @@ New to the framework? Register a target, then run this:
 
 ---
 
-## Lifecycle Commands (speckit core)
+## Lifecycle Commands
 
 Run individually when you want phase-by-phase control instead of `/dev:feature`.
 
+**Slash syntax**: lifecycle commands use the `/throughline:*` namespace (e.g. `/throughline:specify`). Copilot, Codex, and Cursor use the dot form (`/throughline.specify`).
+
 | Command | Arguments | Produces | Notes |
 |---------|-----------|----------|-------|
-| `/speckit:constitution` | `[amendment]` | Amended `.specify/memory/constitution.md` | Human approval + version bump required |
-| `/speckit:specify` | `"<description incl. target>"` | `specs/NNN-*/spec.md` | WHAT + WHY; records the Target; max 3 `[NEEDS CLARIFICATION]` |
-| `/speckit:clarify` | — | Resolved markers in spec.md | Max 3 questions per run; waits for your answers |
-| `/speckit:plan` | `[context]` | `specs/NNN-*/plan.md` | `before_plan` hook runs `/dev:analyze`; HIGH/CRITICAL requires `/dev:design` |
-| `/speckit:tasks` | — | `specs/NNN-*/tasks.md` | Atomic, dependency-ordered; every task cites FR + standard |
-| `/speckit:implement` | — | Implemented slice on branch `sdd/<slice>` | Chains `/dev:implement` → `/dev:test` → `/dev:review` (mandatory) |
-| `/speckit:analyze` | — | Consistency-matrix report | Cross-artifact check; routes findings to the owning phase |
-| `/speckit:checklist` | `[requirements\|design\|implementation\|release]` | `specs/NNN-*/checklists/<type>.md` | Verifies; never modifies artifacts |
+| `/throughline:constitution` | `[amendment]` | Amended `.throughline/memory/constitution.md` | Human approval + version bump required |
+| `/throughline:specify` | `"<description incl. target>"` | `specs/NNN-*/spec.md` | WHAT + WHY; records the Target; max 3 `[NEEDS CLARIFICATION]` |
+| `/throughline:clarify` | — | Resolved markers in spec.md | Max 3 questions per run; waits for your answers |
+| `/throughline:plan` | `[context]` | `specs/NNN-*/plan.md` | `before_plan` hook runs `/dev:analyze`; HIGH/CRITICAL requires `/dev:design` |
+| `/throughline:tasks` | — | `specs/NNN-*/tasks.md` | Atomic, dependency-ordered; every task cites FR + standard |
+| `/throughline:implement` | — | Implemented slice on branch `sdd/<slice>` | Chains `/dev:implement` → `/dev:test` → `/dev:review` (mandatory) |
+| `/throughline:analyze` | — | Consistency-matrix report | Cross-artifact check; routes findings to the owning phase |
+| `/throughline:checklist` | `[requirements\|design\|implementation\|release]` | `specs/NNN-*/checklists/<type>.md` | Verifies; never modifies artifacts |
 
-## Dev Commands (extension)
+## Agent Commands
 
 | Command | Persona | Arguments | Writes |
 |---------|---------|-----------|--------|
@@ -142,9 +144,9 @@ not worth it for throwaway code — use the cheap options above there.
 ## Typical Flows
 
 ```
-First-time setup     tools/install.sh --tool <your-tool> → /speckit:constitution → /dev:ingest-standards → /dev:ingest-exemplars
+First-time setup     tools/install.sh --tool <your-tool> → /throughline:constitution → /dev:ingest-standards → /dev:ingest-exemplars
 Add a feature        /dev:target register <path> → /dev:feature <id> "<description>"
 Greenfield project   /dev:target register <path> --new → /dev:feature <id> "<description>"
-Phase-by-phase       /speckit:specify → clarify → plan → [/dev:design] → tasks → [/dev:scaffold] → implement
+Phase-by-phase       /throughline:specify → /throughline:clarify → /throughline:plan → [/dev:design] → /throughline:tasks → [/dev:scaffold] → /throughline:implement
 Maintenance          /dev:audit → /dev:review-escalated → /dev:lint-wiki
 ```

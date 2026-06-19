@@ -42,7 +42,7 @@ the agent that writes the code is never the agent that approves it.
 
 ## 4. The constitution is law
 
-`.specify/memory/constitution.md` — seven principles every agent obeys:
+`.throughline/memory/constitution.md` — seven principles every agent obeys:
 
 1. **Immutable Source of Truth** — `/standards/` and `/exemplars/` are read-only (hook-enforced)
 2. **Knowledge Before Action** — mandatory bootstrap reads before touching target code
@@ -73,7 +73,7 @@ decidable question instead of guessing.
 ## Repository layout
 
 ```
-.specify/        lifecycle engine: constitution, templates, runbooks, workflows, scripts
+.throughline/        lifecycle engine: constitution, templates, runbooks, workflows, scripts
 .github/         GitHub Copilot adapters: agents, prompts, instructions, skills, hooks, CI
 .claude/ + CLAUDE.md   Claude Code adapters: commands, subagents, skills, hooks
 standards/       IMMUTABLE — your engineering rules (human-curated)

@@ -1,6 +1,6 @@
 # Throughline with Codex (preview)
 
-Codex uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
+Codex uses the dot syntax: `/dev.analyze`, `/throughline`.
 
 > **Preview.** All the adapter files are in place (`.codex/`), but one runtime behaviour still needs confirming on your machine: whether the Orchestrator can spawn an isolated Reviewer subagent on its own. See [Verifying the runtime](#verifying-the-runtime-preview) below. Until then every command still runs; you may just need to invoke the personas yourself.
 
@@ -32,7 +32,7 @@ What loads from the repo: personas in `.codex/agents/*.toml`, global rules in `A
 
 ## 3. First run (load the knowledge, once)
 ```
-/speckit.constitution        # review the framework's law; fill in the Ratified date
+/throughline.constitution        # review the framework's law; fill in the Ratified date
 /dev.ingest-standards        # compile /standards/ into the wiki
 /dev.ingest-exemplars        # compile /exemplars/ into the pattern library
 ```
@@ -59,11 +59,11 @@ Cheaper modes:
 
 Phase by phase, when you want the control:
 ```
-/speckit.specify "Add pagination to orders (target: my-app)"
-/speckit.clarify
-/speckit.plan
-/speckit.tasks
-/speckit.implement
+/throughline "Add pagination to orders (target: my-app)"
+/throughline.clarify
+/throughline.plan
+/throughline.tasks
+/throughline.implement
 ```
 
 Single commands, out of band, with no full spec:
@@ -78,7 +78,7 @@ Single commands, out of band, with no full spec:
 Knowledge only: just step 3, then use the skills ad hoc.
 
 ## Notes specific to Codex
-- The slash syntax is the dot form: `/dev.analyze`, `/speckit.specify`.
+- The slash syntax is the dot form: `/dev.analyze`, `/throughline`.
 - Personas are `.codex/agents/*.toml`, and their `sandbox_mode` sets the read/write posture.
 - Codex has no declarative handoffs, so the Orchestrator names and spawns each persona, and the handoffs are written into the persona text.
 - Commands live globally in `~/.codex/prompts/`, so re-copy them whenever you change `.codex/prompts/`.

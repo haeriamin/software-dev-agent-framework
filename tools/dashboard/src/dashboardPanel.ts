@@ -76,7 +76,7 @@ export class DashboardPanel {
       </div>
       <div class="panel"><div class="empty">${ICONS.inbox}
         <div>No framework root found.</div>
-        <div class="empty-hint">Open the folder containing <code>.specify/memory/constitution.md</code>,
+        <div class="empty-hint">Open the folder containing <code>.throughline/memory/constitution.md</code>,
         or set <code>sddDashboard.frameworkRoot</code>.</div></div></div>`);
   }
 
@@ -190,7 +190,7 @@ export class DashboardPanel {
         slices.length ? `${slices.length} slices` : "",
         slices.length
           ? `<table><thead><tr><th>Slice</th><th>Target</th><th>Phase</th><th>Tasks</th><th>Verdict</th></tr></thead><tbody>${sliceRows}</tbody></table>`
-          : emptyRow("No slices yet — run /speckit.specify to begin.")
+          : emptyRow("No slices yet — run /throughline to begin.")
       )}
 
       ${section(

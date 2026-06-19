@@ -1,6 +1,6 @@
 # Throughline with Claude Code
 
-Claude Code uses the colon syntax: `/dev:analyze`, `/speckit:specify`.
+Claude Code uses the colon syntax: `/dev:analyze`, `/throughline:specify`.
 
 ## 1. What you need
 - Claude Code (CLI or desktop).
@@ -20,12 +20,12 @@ write-safety hooks into `.claude/settings.local.json` (machine-local, gitignored
 Windows, bash on macOS/Linux. No Python required. The read-only guard on `/standards/` and
 `/exemplars/` is declarative in `.claude/settings.json` and is already on before install.
 
-Adapter files are generated — edit `.specify/adapters/source/`, then run `tools/convert` (or
+Adapter files are generated — edit `.throughline/adapters/source/`, then run `tools/convert` (or
 re-run `tools/install`). Do not hand-edit `.claude/agents/` or `.claude/commands/`.
 
 ## 3. First run (load the knowledge, once)
 ```
-/speckit:constitution        # review the framework's law; fill in the Ratified date
+/throughline:constitution        # review the framework's law; fill in the Ratified date
 /dev:ingest-standards        # compile /standards/ into the wiki
 /dev:ingest-exemplars        # compile /exemplars/ into the pattern library
 ```
@@ -54,11 +54,11 @@ Cheaper modes:
 
 Phase by phase, when you want the control:
 ```
-/speckit:specify "Add pagination to orders (target: my-app)"
-/speckit:clarify        # answer up to 3 questions
-/speckit:plan           # runs /dev:analyze; /dev:design too if HIGH/CRITICAL
-/speckit:tasks
-/speckit:implement      # chains /dev:implement, /dev:test, /dev:review
+/throughline:specify "Add pagination to orders (target: my-app)"
+/throughline:clarify        # answer up to 3 questions
+/throughline:plan           # runs /dev:analyze; /dev:design too if HIGH/CRITICAL
+/throughline:tasks
+/dev:implement      # chains /dev:implement, /dev:test, /dev:review
 ```
 
 Single commands, out of band, with no full spec:
@@ -73,7 +73,7 @@ Single commands, out of band, with no full spec:
 Knowledge only: just step 3, then use the skills ad hoc.
 
 ## Notes specific to Claude Code
-- The slash syntax is the colon form: `/dev:analyze`, `/speckit:specify`.
+- The slash syntax is the colon form: `/dev:analyze`, `/throughline:specify`.
 - The Orchestrator hands each phase to a subagent (Analyst, Implementer, Tester, Reviewer, and so on) through the Agent tool, which is what keeps the Reviewer in an independent context.
 - Target access is per-machine (it lives in `.claude/settings.local.json`), so re-register on a new machine.
 

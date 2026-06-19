@@ -40,7 +40,7 @@ anything sits in `work-queue/escalated/`. Click it to open the dashboard.
 
 | Setting | Default | Purpose |
 |---------|---------|---------|
-| `sddDashboard.frameworkRoot` | auto | Absolute path to the framework; leave empty to auto-detect the workspace folder containing `.specify/memory/constitution.md` |
+| `sddDashboard.frameworkRoot` | auto | Absolute path to the framework; leave empty to auto-detect the workspace folder containing `.throughline/memory/constitution.md` |
 | `sddDashboard.logTail` | 15 | Operations-log entries shown on the dashboard |
 
 Auto-detection means the dashboard works both in the framework repo itself and in the

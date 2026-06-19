@@ -4,17 +4,14 @@
 
 ## What it is
 
-It is a set of rules and steps that sit on top of [spec-kit](https://github.com/github/spec-kit)
-and drive your AI coding tool. Canonical content lives under `.specify/adapters/source/`; after
-clone, run `tools/install.sh` (or `install.ps1`) to generate your tool's wiring locally — generated
-adapter folders are not committed to git.
+It is a self-contained spec-driven development platform: lifecycle commands (`/throughline.*`), agent commands (`/dev.*`), standards, and multi-agent review gates — all in one repo. It drives your AI coding tool. Canonical content lives under `.throughline/adapters/source/`; after clone, run `tools/install.sh` (or `install.ps1`) to generate your tool's wiring locally — generated adapter folders are not committed to git.
 scripts, the dashboard). Most of the framework is written instructions that the model follows. So how
 well it works depends on how well the model follows instructions — helped by an independent
 review step and by hooks that block unsafe actions, not by a program that forces every rule.
 
 ## Which tools work today
 
-Adapters are generated from `.specify/adapters/source/`, so the list grows by adding a profile, not
+Adapters are generated from `.throughline/adapters/source/`, so the list grows by adding a profile, not
 by hand-porting. Tiers describe how much the tool can *enforce* (see
 [`docs/runtimes/README.md`](docs/runtimes/README.md)).
 

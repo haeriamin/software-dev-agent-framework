@@ -3,7 +3,7 @@ work-queue/backups/*
 !work-queue/backups/.gitkeep
 wiki/_lint-report.md
 targets/*.code-workspace
-.specify/feature.json
+.throughline/feature.json
 
 # Machine-local (target access permissions land here, never in shared settings.json)
 .claude/settings.local.json
@@ -32,8 +32,8 @@ CLAUDE.md
 GEMINI.md
 QWEN.md
 opencode.json
-.specify/adapters/generated/
-.specify/integrations/
+.throughline/adapters/generated/
+.throughline/integrations/
 
 # Dashboard extension
 tools/dashboard/node_modules/

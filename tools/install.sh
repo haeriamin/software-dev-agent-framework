@@ -13,7 +13,7 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PROFILES="$ROOT/.specify/adapters/profiles"
+PROFILES="$ROOT/.throughline/adapters/profiles"
 DASH=$'\xe2\x80\x94'
 
 TOOL=""; ALL=0; LIST=0; NOINT=0; DRY=0

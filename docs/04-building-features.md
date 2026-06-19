@@ -36,12 +36,12 @@ first missing artifact.
 Full control at every step:
 
 ```bash
-/speckit:specify "Add cursor pagination to my-app's orders endpoint"   # → specs/NNN-*/spec.md
-/speckit:clarify                                       # resolve [NEEDS CLARIFICATION]
-/speckit:plan        # → plan.md, grounded in /dev:analyze's report
+/throughline:specify "Add cursor pagination to my-app's orders endpoint"   # → specs/NNN-*/spec.md
+/throughline:clarify                                       # resolve [NEEDS CLARIFICATION]
+/throughline:plan        # → plan.md, grounded in /dev:analyze's report
 /dev:design          # only if HIGH/CRITICAL — design.md + ADRs, you approve
-/speckit:tasks       # → tasks.md (atomic, each task cites FR + standard)
-/speckit:implement   # → /dev:implement → /dev:test → /dev:review
+/throughline:tasks       # → tasks.md (atomic, each task cites FR + standard)
+/dev:implement   # → /dev:implement → /dev:test → /dev:review
 ```
 
 What to check at each artifact:
@@ -63,17 +63,17 @@ The short way — register, then let `/dev:feature` detect the empty target:
 Or phase by phase, if you want to drive each step:
 
 ```bash
-/speckit:specify "A CLI tool that ..."
-/speckit:clarify && /speckit:plan
+/throughline:specify "A CLI tool that ..."
+/throughline:clarify && /throughline:plan
 /dev:design          # mandatory for greenfield: stack + layout are ADRs you approve
-/speckit:tasks
+/throughline:tasks
 /dev:scaffold        # skeleton with test/lint commands verified GREEN before any feature code
-/speckit:implement
+/dev:implement
 ```
 
 ## Before a slice: ideate
 
-Not sure what to build yet? `/dev:ideate "<rough idea>" my-app` thinks it through with you — a few distinct approaches with their trade-offs and risks, grounded in your code — and recommends a direction. It's read-only: it writes an ideation note and builds nothing. When you've chosen, start a slice with `/dev:feature` (or `/speckit:specify`).
+Not sure what to build yet? `/dev:ideate "<rough idea>" my-app` thinks it through with you — a few distinct approaches with their trade-offs and risks, grounded in your code — and recommends a direction. It's read-only: it writes an ideation note and builds nothing. When you've chosen, start a slice with `/dev:feature` (or `/throughline:specify`).
 
 ## Out-of-band (no slice)
 

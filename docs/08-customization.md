@@ -10,11 +10,11 @@ the process layer is stack-agnostic; the knowledge layer is yours.
 ## Amend the constitution
 
 Thresholds, formula weights, principles, and write boundaries live in
-`.specify/memory/constitution.md` and **only** there — config files quoting them are
+`.throughline/memory/constitution.md` and **only** there — config files quoting them are
 mirrors. To change one:
 
 ```bash
-/speckit:constitution "Lower the PASS threshold to 0.80"
+/throughline:constitution "Lower the PASS threshold to 0.80"
 ```
 
 The agent drafts the diff, waits for your explicit approval, bumps the version
@@ -23,8 +23,8 @@ relaxing the gates: this is the supported path.
 
 ## Add a command
 
-1. Runbook (the procedure): `.specify/extensions/dev/commands/dev.<name>.md`
-2. Declare it: `.specify/extensions/dev/extension.yml`
+1. Runbook (the procedure): `.throughline/extensions/dev/commands/dev.<name>.md`
+2. Declare it: `.throughline/extensions/dev/extension.yml`
 3. Copilot: `.github/agents/dev.<name>.agent.md` (thin) + `.github/prompts/dev.<name>.prompt.md` (3 lines)
 4. Claude: `.claude/commands/dev/<name>.md` (thin)
 5. Add a row to `COMMANDS.md`
@@ -40,7 +40,7 @@ Edit `.github/skills/<name>/SKILL.md`, copy it byte-identical to
 
 ## Runtime config
 
-Copy `.specify/extensions/dev/config-template.yml` → repo-root `dev-config.yml` for
+Copy `.throughline/extensions/dev/config-template.yml` → repo-root `dev-config.yml` for
 overrides (retries, parallelism, branch prefix). Confidence numbers are constitutional —
 not configurable here.
 
@@ -48,10 +48,10 @@ not configurable here.
 
 | File | Role |
 |------|------|
-| `.specify/memory/constitution.md` | Supreme law |
-| `.specify/extensions/dev/commands/*.md` | Command runbooks (canonical procedure) |
-| `.specify/templates/*.md` | Artifact templates (spec, plan, design, tasks, checklist, target) |
-| `.specify/workflows/<id>/workflow.yml` | Multi-step orchestration definitions |
+| `.throughline/memory/constitution.md` | Supreme law |
+| `.throughline/extensions/dev/commands/*.md` | Command runbooks (canonical procedure) |
+| `.throughline/templates/*.md` | Artifact templates (spec, plan, design, tasks, checklist, target) |
+| `.throughline/workflows/<id>/workflow.yml` | Multi-step orchestration definitions |
 | `.github/agents/*.agent.md` / `.claude/agents/*.md` | Copilot agents / Claude persona subagents |
 | `.github/prompts/*.prompt.md` / `.claude/commands/**` | Slash entry points |
 | `.github/instructions/*.instructions.md` | Persona protocols (runtime-neutral) |

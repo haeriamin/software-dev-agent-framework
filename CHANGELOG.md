@@ -7,7 +7,7 @@ The constitution carries its own version; amendments are logged in `wiki/log.md`
 
 ### Added
 - **Multi-tool adapter generator** — `tools/convert.{ps1,sh}` and `tools/install.{ps1,sh}` render
-  thin per-tool wiring from `.specify/adapters/source/` (personas, commands, hooks, rules). Six
+  thin per-tool wiring from `.throughline/adapters/source/` (personas, commands, hooks, rules). Six
   tools: Claude Code, Copilot, Codex, Cursor (Tier A); Aider, Windsurf (Tier B rules-only). CI
   fails on adapter drift and ps1/bash parity.
 - **Cursor runtime adapter (preview)** — `.cursor/agents/`, `.cursor/commands/`,
@@ -21,7 +21,7 @@ The constitution carries its own version; amendments are logged in `wiki/log.md`
   `<target>/.throughline/CHANGELOG.md` on the `sdd/<slice>` branch (Implementer adds it, Orchestrator
   stamps the verdict at close). Toggle with `changelog: on|off` in `targets/<id>.yml`.
 - **Use-case workflows** — `dev-bugfix` (micro lane), `dev-explore` (read-only analysis), and
-  `dev-review` (standalone gate) added to `.specify/workflows/` and the registry.
+  `dev-review` (standalone gate) added to `.throughline/workflows/` and the registry.
 - **`tools/setup-hooks.{ps1,sh,py}`** — one-time, per-OS hook wiring; plus a starter Python exemplar
   (`exemplars/good/python/`).
 
@@ -42,7 +42,7 @@ The constitution carries its own version; amendments are logged in `wiki/log.md`
 
 Initial public release.
 
-- Spec-driven lifecycle (spec-kit): specify → clarify → plan → tasks → implement → analyze
+- Spec-driven lifecycle (`/throughline.*`): specify → clarify → plan → tasks → implement → analyze
 - Eight single-purpose agent personas with separation of duties and artifact-only handoffs
 - `/dev.feature` — one command for existing codebases and greenfield projects (auto-detected)
 - 13 `/dev.*` commands; dual-runtime adapters for GitHub Copilot and Claude Code over shared runbooks

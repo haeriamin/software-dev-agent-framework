@@ -66,7 +66,7 @@ if (Test-Path (Split-Path $codexPath -Parent)) {
 # Only when the Cursor adapter is present. Cursor takes a single command string per hook (no
 # per-OS field, like Codex), so the .sh commands in the template are rewritten to powershell + .ps1.
 $cursorDir = Join-Path $root ".cursor"
-$cursorTemplate = Join-Path $root ".specify\adapters\generated\cursor\hooks.template.json"
+$cursorTemplate = Join-Path $root ".throughline\adapters\generated\cursor\hooks.template.json"
 if ((Test-Path $cursorDir) -and (Test-Path $cursorTemplate)) {
     $raw = Get-Content $cursorTemplate -Raw
     # .github/hooks/scripts/<name>.sh  ->  powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/<name>.ps1
@@ -76,7 +76,7 @@ if ((Test-Path $cursorDir) -and (Test-Path $cursorTemplate)) {
 
 # --- Antigravity: install .agents/hooks.json from the staged template, rewritten for Windows ---
 $agentsDir = Join-Path $root ".agents"
-$agTemplate = Join-Path $root ".specify\adapters\generated\antigravity\hooks.template.json"
+$agTemplate = Join-Path $root ".throughline\adapters\generated\antigravity\hooks.template.json"
 if ((Test-Path (Join-Path $root "GEMINI.md")) -and (Test-Path $agTemplate)) {
     $raw = Get-Content $agTemplate -Raw
     $raw = [regex]::Replace($raw, '\.github/hooks/scripts/([A-Za-z0-9._-]+)\.sh', 'powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/$1.ps1')
@@ -93,7 +93,7 @@ if (Test-Path (Join-Path $agentsDir "hooks.json")) { Write-Host "  Antigravity: 
 
 # --- Kimi Code: install .kimi/config.toml from the staged template, rewritten for Windows ---
 $kimiDir = Join-Path $root ".kimi"
-$kimiTemplate = Join-Path $root ".specify\adapters\generated\kimi\hooks.template.toml"
+$kimiTemplate = Join-Path $root ".throughline\adapters\generated\kimi\hooks.template.toml"
 if ((Test-Path (Join-Path $kimiDir "AGENTS.md")) -and (Test-Path $kimiTemplate)) {
     $raw = Get-Content $kimiTemplate -Raw
     $raw = [regex]::Replace($raw, 'command = "\.github/hooks/scripts/([A-Za-z0-9._-]+)\.sh"', 'command = "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/$1.ps1"')

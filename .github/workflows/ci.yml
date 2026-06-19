@@ -32,7 +32,7 @@ jobs:
         run: |
           rm -rf .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
             .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
-            .specify/adapters/generated .specify/integrations \
+            .throughline/adapters/generated .throughline/integrations \
             AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json
 
       - name: Generate with PowerShell
@@ -42,7 +42,7 @@ jobs:
         run: |
           find .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
             .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
-            .specify/adapters/generated .specify/integrations \
+            .throughline/adapters/generated .throughline/integrations \
             AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json \
             .github/copilot-instructions.md .github/pull_request_template.md \
             -type f 2>/dev/null | sort | xargs -r sha256sum > /tmp/checksums-ps1.txt
@@ -51,7 +51,7 @@ jobs:
         run: |
           rm -rf .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
             .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
-            .specify/adapters/generated .specify/integrations \
+            .throughline/adapters/generated .throughline/integrations \
             AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json
 
       - name: Regenerate with bash
@@ -61,7 +61,7 @@ jobs:
         run: |
           find .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
             .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
-            .specify/adapters/generated .specify/integrations \
+            .throughline/adapters/generated .throughline/integrations \
             AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json \
             .github/copilot-instructions.md .github/pull_request_template.md \
             -type f 2>/dev/null | sort | xargs -r sha256sum > /tmp/checksums-sh.txt
@@ -133,17 +133,17 @@ jobs:
 
       - name: Core scripts smoke test (bash variants)
         run: |
-          chmod +x .specify/scripts/bash/*.sh
-          .specify/scripts/bash/create-new-feature.sh smoke-test | grep -q '"FEATURE_NUM":"001"'
-          .specify/scripts/bash/check-prerequisites.sh plan && exit 1 || true
-          rm -rf specs/001-smoke-test .specify/feature.json
+          chmod +x .throughline/scripts/bash/*.sh
+          .throughline/scripts/bash/create-new-feature.sh smoke-test | grep -q '"FEATURE_NUM":"001"'
+          .throughline/scripts/bash/check-prerequisites.sh plan && exit 1 || true
+          rm -rf specs/001-smoke-test .throughline/feature.json
 
       - name: JSON artifacts parse
         run: |
           for f in .github/hooks/hooks.json .claude/settings.json \
-                   .specify/workflows/workflow-registry.json .specify/init-options.json \
-                   .specify/adapters/generated/cursor/hooks.template.json \
-                   .specify/adapters/generated/antigravity/hooks.template.json \
+                   .throughline/workflows/workflow-registry.json .throughline/init-options.json \
+                   .throughline/adapters/generated/cursor/hooks.template.json \
+                   .throughline/adapters/generated/antigravity/hooks.template.json \
                    opencode.json .qwen/settings.json \
                    tools/dashboard/package.json tools/dashboard/tsconfig.json; do
             [ -f "$f" ] || { echo "MISSING (run convert first): $f"; exit 1; }

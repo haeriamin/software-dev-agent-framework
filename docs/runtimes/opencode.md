@@ -1,6 +1,6 @@
 # Throughline with OpenCode (preview)
 
-OpenCode uses dot syntax in docs: `/dev.analyze`, `/speckit.specify`. Native slash commands come from `.opencode/commands/*.md` (filename = command name).
+OpenCode uses dot syntax in docs: `/dev.analyze`, `/throughline`. Native slash commands come from `.opencode/commands/*.md` (filename = command name).
 
 > **Preview.** Guards are declarative in `opencode.json` `permission` until verified — see [.opencode/VERIFICATION.md](../../.opencode/VERIFICATION.md).
 
@@ -23,13 +23,13 @@ Root `AGENTS.md` is the Codex adapter — do not edit it for OpenCode.
 ## First run
 
 ```
-/speckit.constitution
+/throughline.constitution
 /dev.ingest-standards
 /dev.ingest-exemplars
 /dev.target register path/to/my-app
 /dev.feature my-app "Your first slice"
 ```
 
-Phase commands: `/dev.analyze`, `/dev.review`, `/speckit.specify`, etc. (see `.opencode/commands/`).
+Phase commands: `/dev.analyze`, `/dev.review`, `/throughline`, etc. (see `.opencode/commands/`).
 
 More: [.opencode/README.md](../../.opencode/README.md).

@@ -89,7 +89,7 @@ echo "wrote $codex_path"
 # Cursor: install .cursor/hooks.json from the staged template, rewritten for bash.
 # Prefix bare ".github/hooks/scripts/<name>.sh" commands with "bash " so they run without +x.
 cursor_dir="$ROOT/.cursor"
-cursor_template="$ROOT/.specify/adapters/generated/cursor/hooks.template.json"
+cursor_template="$ROOT/.throughline/adapters/generated/cursor/hooks.template.json"
 if [ -d "$cursor_dir" ] && [ -f "$cursor_template" ]; then
   sed -E 's#"(\.github/hooks/scripts/[A-Za-z0-9._-]+\.sh)"#"bash \1"#g' "$cursor_template" > "$cursor_dir/hooks.json"
   echo "wrote $cursor_dir/hooks.json (fail-open until .cursor/VERIFICATION.md passes)"
@@ -97,7 +97,7 @@ fi
 
 # Antigravity: install .agents/hooks.json from the staged template, rewritten for bash.
 agents_dir="$ROOT/.agents"
-ag_template="$ROOT/.specify/adapters/generated/antigravity/hooks.template.json"
+ag_template="$ROOT/.throughline/adapters/generated/antigravity/hooks.template.json"
 if [ -f "$ROOT/GEMINI.md" ] && [ -f "$ag_template" ]; then
   mkdir -p "$agents_dir"
   sed -E 's#"(\.github/hooks/scripts/[A-Za-z0-9._-]+\.sh)"#"bash \1"#g' "$ag_template" > "$agents_dir/hooks.json"
@@ -106,7 +106,7 @@ fi
 
 # Kimi Code: install .kimi/config.toml from the staged template, rewritten for bash.
 kimi_dir="$ROOT/.kimi"
-kimi_template="$ROOT/.specify/adapters/generated/kimi/hooks.template.toml"
+kimi_template="$ROOT/.throughline/adapters/generated/kimi/hooks.template.toml"
 if [ -f "$kimi_dir/AGENTS.md" ] && [ -f "$kimi_template" ]; then
   mkdir -p "$kimi_dir"
   sed -E 's#command = "\.github/hooks/scripts/([A-Za-z0-9._-]+)\.sh"#command = "bash .github/hooks/scripts/\1.sh"#g' "$kimi_template" > "$kimi_dir/config.toml"

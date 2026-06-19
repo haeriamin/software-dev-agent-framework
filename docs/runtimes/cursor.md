@@ -1,6 +1,6 @@
 # Throughline with Cursor (preview)
 
-Cursor uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
+Cursor uses the dot syntax: `/dev.analyze`, `/throughline`.
 
 > **Preview.** The adapter files are generated and in place (`.cursor/`), but two runtime behaviours
 > still need confirming on your machine: whether the guard hooks actually block, and whether the
@@ -34,7 +34,7 @@ Then reload the Cursor window so it re-reads `.cursor/`. What loads: the persona
 
 ## 3. First run (load the knowledge, once)
 ```
-/speckit.constitution        # review the framework's law; fill in the Ratified date
+/throughline.constitution        # review the framework's law; fill in the Ratified date
 /dev.ingest-standards        # compile /standards/ into the wiki
 /dev.ingest-exemplars        # compile /exemplars/ into the pattern library
 ```
@@ -62,11 +62,11 @@ Cheaper modes:
 
 Phase by phase, when you want the control:
 ```
-/speckit.specify "Add pagination to orders (target: my-app)"
-/speckit.clarify
-/speckit.plan
-/speckit.tasks
-/speckit.implement
+/throughline "Add pagination to orders (target: my-app)"
+/throughline.clarify
+/throughline.plan
+/throughline.tasks
+/throughline.implement
 ```
 
 Single commands, out of band, with no full spec:
@@ -81,11 +81,11 @@ Single commands, out of band, with no full spec:
 Knowledge only: just step 3, then use the skills ad hoc.
 
 ## Notes specific to Cursor
-- The slash syntax is the dot form: `/dev.analyze`, `/speckit.specify`.
+- The slash syntax is the dot form: `/dev.analyze`, `/throughline`.
 - Personas are `.cursor/agents/*.md`; the read-only roles carry `readonly: true`.
 - `.cursor/hooks.json` is machine-local (gitignored) and re-wired per-OS by `tools/setup-hooks`; the
-  committed source is the staged template under `.specify/adapters/generated/cursor/`.
-- Don't hand-edit anything in `.cursor/` — it's generated. Edit `.specify/adapters/source/` and run
+  committed source is the staged template under `.throughline/adapters/generated/cursor/`.
+- Don't hand-edit anything in `.cursor/` — it's generated. Edit `.throughline/adapters/source/` and run
   `tools/convert`.
 
 ## Verifying the runtime (preview)

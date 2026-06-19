@@ -2,7 +2,7 @@
 
 Throughline is one framework ("one brain") behind many thin adapters. The process, rules, agents, and knowledge are shared and don't depend on which tool you run; each tool just wires them in its own way. Pick whichever one you already use. The commands are the same across every tool, and the main difference is the slash punctuation.
 
-Every adapter is generated from a single source of truth (`.specify/adapters/source/`) by `tools/convert`. You don't hand-edit adapter files — you pick your tools with the installer:
+Every adapter is generated from a single source of truth (`.throughline/adapters/source/`) by `tools/convert`. You don't hand-edit adapter files — you pick your tools with the installer:
 
 ```bash
 # macOS / Linux                          # Windows (Git Bash — from repo root)
@@ -52,7 +52,7 @@ Every tool supports the same five workflows. They only differ in setup and synta
 
 1. **One command for the whole lifecycle.** `dev.feature <target> "<desc>"` runs specify, clarify, plan, design (if needed), tasks, scaffold (for greenfield), implement, test, and review, stopping only at the real gates.
 2. **Cheaper modes.** `--express` skips the optional approval pauses; `--micro` drops to implement, test, review for a genuinely small change.
-3. **Phase by phase.** Drive the lifecycle yourself with `speckit.specify`, `clarify`, `plan`, `tasks`, `implement`, adding `dev.design` or `dev.scaffold` when they apply.
+3. **Phase by phase.** Drive the lifecycle yourself with `dev.throughline`, `clarify`, `plan`, `tasks`, `implement`, adding `dev.design` or `dev.scaffold` when they apply.
 4. **Single commands.** Run `dev.analyze`, `dev.test`, `dev.review`, or `dev.audit` against a target without a full spec.
 5. **Knowledge only.** Ingest your standards and examples with `dev.ingest-standards` / `dev.ingest-exemplars`, then call the skills ad hoc.
 
@@ -69,4 +69,4 @@ Whichever tool you pick, the agents never merge or push. That stays your call. O
 
 ## Adding another tool
 
-Adapters are generated, so adding a tool is mostly data, not code. See [`.specify/adapters/README.md`](../../.specify/adapters/README.md): add one `*.profile`, run `tools/convert`, and the personas, commands, hooks, and rules render in that tool's format from the shared source.
+Adapters are generated, so adding a tool is mostly data, not code. See [`.throughline/adapters/README.md`](../../.throughline/adapters/README.md): add one `*.profile`, run `tools/convert`, and the personas, commands, hooks, and rules render in that tool's format from the shared source.

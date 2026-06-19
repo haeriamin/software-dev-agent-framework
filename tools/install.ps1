@@ -18,7 +18,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
-$profileDir = Join-Path $root ".specify\adapters\profiles"
+$profileDir = Join-Path $root ".throughline\adapters\profiles"
 $Dash = [char]0x2014
 
 function Get-Field($file, $key, $default = "") {

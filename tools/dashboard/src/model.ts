@@ -126,12 +126,12 @@ export class FrameworkModel {
       .getConfiguration("sddDashboard")
       .get<string>("frameworkRoot", "")
       .trim();
-    if (configured && fs.existsSync(path.join(configured, ".specify", "memory", "constitution.md"))) {
+    if (configured && fs.existsSync(path.join(configured, ".throughline", "memory", "constitution.md"))) {
       return configured;
     }
     for (const folder of vscode.workspace.workspaceFolders ?? []) {
       const candidate = folder.uri.fsPath;
-      if (fs.existsSync(path.join(candidate, ".specify", "memory", "constitution.md"))) {
+      if (fs.existsSync(path.join(candidate, ".throughline", "memory", "constitution.md"))) {
         return candidate;
       }
     }

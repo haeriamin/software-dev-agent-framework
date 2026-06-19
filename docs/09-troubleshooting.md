@@ -13,7 +13,7 @@ there yourself, then run the matching ingest command.
 - **Copilot / Cursor**: commands are `/dev.name` (dot). Copilot: open the framework folder or a
   target workspace. Cursor: reload the window after `tools/install --tool cursor`.
 - **Codex**: commands live in `~/.codex/prompts/` (global). Re-copy after `tools/convert --tool codex`.
-- **Generated adapters**: if you edited `.specify/adapters/source/`, run `tools/convert` — do not
+- **Generated adapters**: if you edited `.throughline/adapters/source/`, run `tools/convert` — do not
   hand-edit `.claude/commands/`, `.cursor/commands/`, etc.
 
 ## Agent can't edit my target
@@ -57,7 +57,7 @@ After 2 retries it escalates — answer the escalation's questions via
 
 ## Dashboard says "No framework root found"
 
-Open a workspace containing `.specify/memory/constitution.md`, or set
+Open a workspace containing `.throughline/memory/constitution.md`, or set
 `sddDashboard.frameworkRoot` to the framework's absolute path.
 
 ## CI failures

@@ -2,9 +2,9 @@
 # Throughline adapter generator (PowerShell, Windows PowerShell 5.1 compatible).
 #
 # Renders the thin per-tool adapter wiring from the single source of truth in
-# .specify/adapters/source/, driven by the per-tool profiles in .specify/adapters/profiles/.
+# .throughline/adapters/source/, driven by the per-tool profiles in .throughline/adapters/profiles/.
 # Canonical procedure (runbooks, instructions, agent bodies, skills) lives in
-# .specify/adapters/source/; this script emits thin per-tool wiring only.
+# .throughline/adapters/source/; this script emits thin per-tool wiring only.
 #
 # Usage:
 #   powershell -File tools/convert.ps1                 # generate every tool
@@ -24,8 +24,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $RepoRoot   = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$SourceDir  = Join-Path $RepoRoot ".specify/adapters/source"
-$ProfileDir = Join-Path $RepoRoot ".specify/adapters/profiles"
+$SourceDir  = Join-Path $RepoRoot ".throughline/adapters/source"
+$ProfileDir = Join-Path $RepoRoot ".throughline/adapters/profiles"
 $Utf8NoBom  = New-Object System.Text.UTF8Encoding($false)
 $Dash       = [char]0x2014   # em dash, emitted via code point so this script stays pure ASCII
 
@@ -78,12 +78,12 @@ function Esc-Json([string]$s) {
 
 # Rewrite slash-command references to the tool's punctuation. The source uses the colon form
 # (/dev:review); tools that use the dot form get /dev.review. File PATHS like
-# .specify/extensions/dev/commands/dev.review.md contain "/dev/" or "dev." (never "/dev:") and are
+# .throughline/extensions/dev/commands/dev.review.md contain "/dev/" or "dev." (never "/dev:") and are
 # left untouched.
 function Apply-Slash([string]$text, [string]$sep) {
     if ($null -eq $text) { return "" }
     if ($sep -eq ":") { return $text }
-    return (($text -replace "/dev:", "/dev$sep") -replace "/speckit:", "/speckit$sep")
+    return (($text -replace "/dev:", "/dev$sep") -replace "/throughline:", "/throughline$sep")
 }
 
 # --- load source -----------------------------------------------------------
@@ -163,22 +163,24 @@ function Get-Hooks {
 
 function Build-CommandCore($cmd, [string]$format, $prof) {
     if ($cmd.ns -eq "dev") {
+        if ($cmd.persona -eq "") { throw "Dev command '$($cmd.full)' requires a persona field" }
         $ref = (Get-Field $prof "persona_ref" ".claude/agents/{persona}.md").Replace("{persona}", $cmd.persona)
         $word = if ($format -eq "claude") { "subagent " } else { "" }
         $action = if ($cmd.personaAction -ne "") { $cmd.personaAction } else { Get-Field $prof "spawn_note" "delegate to it as a subagent." }
-        $runbookPath = ".specify/extensions/dev/commands/dev.$($cmd.cmd).md"
+        $runbookPath = ".throughline/extensions/dev/commands/dev.$($cmd.cmd).md"
         $tailPart = if ($cmd.runbookTail -ne "") { " $($cmd.runbookTail)" } else { "" }
         $personaLine = "Adopt the **$($cmd.persona)** ${word}persona (``$ref``) $Dash $action"
-        $runbookLine = "Follow the canonical runbook at ``$runbookPath`` step-by-step: $($cmd.runbookSteps).$tailPart The constitution at ``.specify/memory/constitution.md`` overrides everything else."
+        $runbookLine = "Follow the canonical runbook at ``$runbookPath`` step-by-step: $($cmd.runbookSteps).$tailPart The constitution at ``.throughline/memory/constitution.md`` overrides everything else."
         $final = if ($cmd.finalNote -ne "") { $cmd.finalNote } else { "Bootstrap first (Constitution Principle II); append the outcome to ``wiki/log.md`` (Principle VII)." }
         return "$personaLine`n`n$runbookLine`n`n$final"
     }
-    else {
-        $runbookPath = ".github/agents/speckit.$($cmd.cmd).agent.md"
-        $line1 = "Follow the runbook at ``$runbookPath`` $Dash its content is runtime-neutral; ignore Copilot-specific frontmatter (tools/handoffs) and use your own tools. Helper scripts referenced there live under ``.specify/scripts/`` (PowerShell and bash variants)."
-        $line2 = "Check ``.specify/extensions.yml`` for lifecycle hooks per ``.github/instructions/extension-hooks.instructions.md``. The constitution at ``.specify/memory/constitution.md`` overrides everything else."
+    if ($cmd.ns -eq "throughline") {
+        $runbookPath = ".github/agents/throughline.$($cmd.cmd).agent.md"
+        $line1 = "Follow the runbook at ``$runbookPath`` $Dash its content is runtime-neutral; ignore Copilot-specific frontmatter (tools/handoffs) and use your own tools. Helper scripts referenced there live under ``.throughline/scripts/`` (PowerShell and bash variants)."
+        $line2 = "Check ``.throughline/extensions.yml`` for lifecycle hooks per ``.github/instructions/extension-hooks.instructions.md``. The constitution at ``.throughline/memory/constitution.md`` overrides everything else."
         return "$line1`n`n$line2"
     }
+    throw "Unknown command namespace '$($cmd.ns)' for $($cmd.full)"
 }
 
 function Build-FrontmatterCommand($cmd, [string]$format, $prof, [string]$leadComment) {
@@ -209,26 +211,26 @@ function Emit-Personas($prof, $personas) {
         $path = Join-Path $dir "$($p.name)$ext"
         switch ($fmt) {
             "md" {
-                $content = "---`nname: $($p.name)`ndescription: $($p.description)`ntools: $($p.tools)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .specify/adapters/source/agents/$($p.name).agent.md + personas/$($p.name).persona; edit the source, not this file. -->"
+                $content = "---`nname: $($p.name)`ndescription: $($p.description)`ntools: $($p.tools)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .throughline/adapters/source/agents/$($p.name).agent.md + personas/$($p.name).persona; edit the source, not this file. -->"
             }
             "md-cursor" {
-                $content = "---`nname: $($p.name)`ndescription: $($p.description)`nmodel: inherit`nreadonly: $($p.readonly)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .specify/adapters/source/personas/$($p.name).persona; edit there. -->"
+                $content = "---`nname: $($p.name)`ndescription: $($p.description)`nmodel: inherit`nreadonly: $($p.readonly)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .throughline/adapters/source/personas/$($p.name).persona; edit there. -->"
             }
             "md-antigravity" {
-                $content = "---`nname: $($p.name)`ndescription: $($p.description)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .specify/adapters/source/personas/$($p.name).persona; edit there. -->"
+                $content = "---`nname: $($p.name)`ndescription: $($p.description)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .throughline/adapters/source/personas/$($p.name).persona; edit there. -->"
             }
             "md-opencode" {
                 $perm = if ($p.readonly -eq "true") { "permission:`n  edit: deny`n  bash:`n    `"*`": ask`n" } else { "" }
-                $content = "---`ndescription: $($p.description)`nmode: subagent`n$perm---`n`n$($p.body)`n`n<!-- generated by tools/convert from .specify/adapters/source/personas/$($p.name).persona; edit there. -->"
+                $content = "---`ndescription: $($p.description)`nmode: subagent`n$perm---`n`n$($p.body)`n`n<!-- generated by tools/convert from .throughline/adapters/source/personas/$($p.name).persona; edit there. -->"
             }
             "md-qwen" {
-                $content = "---`nname: $($p.name)`ndescription: $($p.description)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .specify/adapters/source/personas/$($p.name).persona; edit there. -->"
+                $content = "---`nname: $($p.name)`ndescription: $($p.description)`n---`n`n$($p.body)`n`n<!-- generated by tools/convert from .throughline/adapters/source/personas/$($p.name).persona; edit there. -->"
             }
             "md-kimi" {
-                $content = "<!-- generated by tools/convert from .specify/adapters/source/personas/$($p.name).persona; edit there. -->`n`n# $($p.display)`n`n$($p.body)"
+                $content = "<!-- generated by tools/convert from .throughline/adapters/source/personas/$($p.name).persona; edit there. -->`n`n# $($p.display)`n`n$($p.body)"
             }
             "toml" {
-                $hdr = "# GENERATED by tools/convert from .specify/adapters/source/personas/$($p.name).persona $Dash edit there.`n# Peer to .claude/agents/$($p.name).md and .github/agents/$($p.name).agent.md (shared, runtime-neutral)."
+                $hdr = "# GENERATED by tools/convert from .throughline/adapters/source/personas/$($p.name).persona $Dash edit there.`n# Peer to .claude/agents/$($p.name).md and .github/agents/$($p.name).agent.md (shared, runtime-neutral)."
                 # sandbox_mode is a Codex concept; carry its surface comment when the source supplies one.
                 $sandboxLine = "sandbox_mode = `"$($p.sandbox)`""
                 if ($p.sandboxComment -ne "") { $sandboxLine += "   # $($p.sandboxComment)" }
@@ -255,25 +257,25 @@ function Emit-Commands($prof, $commands) {
         switch ($fmt) {
             "claude" { $content = Build-FrontmatterCommand $c "claude" $prof "" }
             "codex"  {
-                $lead = "<!-- Codex CLI adapter for /$($c.full) $Dash generated from .specify/adapters/source. Filename ($($c.full).md) is the slash command; install by copying .codex/prompts/*.md into `$CODEX_HOME/prompts/. -->"
+                $lead = "<!-- Codex CLI adapter for /$($c.full) $Dash generated from .throughline/adapters/source. Filename ($($c.full).md) is the slash command; install by copying .codex/prompts/*.md into `$CODEX_HOME/prompts/. -->"
                 $content = Build-FrontmatterCommand $c "codex" $prof $lead
             }
             "cursor" {
                 $core = Build-CommandCore $c "cursor" $prof
-                $content = "<!-- generated by tools/convert from .specify/adapters/source/commands/$($c.full).command; edit there. -->`n`n# /$($c.full)`n`n$core`n`nUser input follows after the command: `$ARGUMENTS"
+                $content = "<!-- generated by tools/convert from .throughline/adapters/source/commands/$($c.full).command; edit there. -->`n`n# /$($c.full)`n`n$core`n`nUser input follows after the command: `$ARGUMENTS"
             }
             "antigravity-rule" {
                 $core = Build-CommandCore $c "cursor" $prof
-                $content = "<!-- generated by tools/convert from .specify/adapters/source/commands/$($c.full).command; edit there. -->`n`n# Command: /$($c.full)`n`n$core`n`nUse this rule when the user asks for ``/$($c.full)`` or describes this lifecycle phase."
+                $content = "<!-- generated by tools/convert from .throughline/adapters/source/commands/$($c.full).command; edit there. -->`n`n# Command: /$($c.full)`n`n$core`n`nUse this rule when the user asks for ``/$($c.full)`` or describes this lifecycle phase."
             }
             "opencode" {
                 $core = Build-CommandCore $c "cursor" $prof
                 $agentLine = if ($c.ns -eq "dev" -and $c.persona -ne "") { "agent: $($c.persona)`nsubtask: true`n" } else { "" }
-                $content = "<!-- generated by tools/convert from .specify/adapters/source/commands/$($c.full).command; edit there. -->`n---`ndescription: `"$(Esc-Yaml $c.description)`"`n$agentLine---`n`n$core`n`n`$ARGUMENTS"
+                $content = "<!-- generated by tools/convert from .throughline/adapters/source/commands/$($c.full).command; edit there. -->`n---`ndescription: `"$(Esc-Yaml $c.description)`"`n$agentLine---`n`n$core`n`n`$ARGUMENTS"
             }
             "qwen" {
                 $core = Build-CommandCore $c "cursor" $prof
-                $content = "<!-- generated by tools/convert from .specify/adapters/source/commands/$($c.full).command; edit there. -->`n---`ndescription: `"$(Esc-Yaml $c.description)`"`n---`n`n$core`n`n{{args}}"
+                $content = "<!-- generated by tools/convert from .throughline/adapters/source/commands/$($c.full).command; edit there. -->`n---`ndescription: `"$(Esc-Yaml $c.description)`"`n---`n`n$core`n`n{{args}}"
             }
             default { throw "Unknown command_format: $fmt" }
         }
@@ -293,7 +295,7 @@ function Emit-Hooks($prof, $hooks) {
     $path = Join-Path $RepoRoot (Get-Field $prof "hooks_file")
     $base = ".github/hooks/scripts"
     if ($fmt -eq "github-json") {
-        $lines = @("{", '  "_generated": "by tools/convert from .specify/adapters/source/hook-spec.tsv; cross-OS (the windows field carries the PowerShell variant)",', '  "hooks": {')
+        $lines = @("{", '  "_generated": "by tools/convert from .throughline/adapters/source/hook-spec.tsv; cross-OS (the windows field carries the PowerShell variant)",', '  "hooks": {')
         $phases = @(@{ key = "PreToolUse"; phase = "pre" }, @{ key = "PostToolUse"; phase = "post" })
         for ($pi = 0; $pi -lt $phases.Count; $pi++) {
             $entries = @($hooks | Where-Object { $_.phase -eq $phases[$pi].phase })
@@ -322,7 +324,7 @@ function Emit-Hooks($prof, $hooks) {
         $pre = @($hooks | Where-Object { $_.phase -eq "pre" -and $_.kind -eq "write" })
         $shell = @($hooks | Where-Object { $_.phase -eq "pre" -and $_.kind -eq "shell" })
         $post = @($hooks | Where-Object { $_.phase -eq "post" })
-        $lines = @("{", '  "version": 1,', '  "_generated": "by tools/convert from .specify/adapters/source/hook-spec.tsv; tools/setup-hooks installs this to .cursor/hooks.json and rewrites commands per OS. failClosed is false until the verification spike passes.",', '  "hooks": {')
+        $lines = @("{", '  "version": 1,', '  "_generated": "by tools/convert from .throughline/adapters/source/hook-spec.tsv; tools/setup-hooks installs this to .cursor/hooks.json and rewrites commands per OS. failClosed is false until the verification spike passes.",', '  "hooks": {')
         $lines += '    "preToolUse": ['
         for ($i = 0; $i -lt $pre.Count; $i++) {
             $sep = if ($i -lt $pre.Count - 1) { "," } else { "" }
@@ -352,7 +354,7 @@ function Emit-Hooks($prof, $hooks) {
         $preWrite = @($hooks | Where-Object { $_.phase -eq "pre" -and $_.kind -eq "write" })
         $preShell = @($hooks | Where-Object { $_.phase -eq "pre" -and $_.kind -eq "shell" })
         $post = @($hooks | Where-Object { $_.phase -eq "post" })
-        $lines = @("{", '  "_generated": "by tools/convert from .specify/adapters/source/hook-spec.tsv; tools/setup-hooks installs this to .agents/hooks.json and rewrites commands per OS. Matchers are best-effort until the verification spike passes.",', '  "hooks": {')
+        $lines = @("{", '  "_generated": "by tools/convert from .throughline/adapters/source/hook-spec.tsv; tools/setup-hooks installs this to .agents/hooks.json and rewrites commands per OS. Matchers are best-effort until the verification spike passes.",', '  "hooks": {')
         $lines += '    "PreToolUse": ['
         $preAll = @($preWrite + $preShell)
         for ($i = 0; $i -lt $preAll.Count; $i++) {
@@ -377,7 +379,7 @@ function Emit-Hooks($prof, $hooks) {
         $preShell = @($hooks | Where-Object { $_.phase -eq "pre" -and $_.kind -eq "shell" })
         $post = @($hooks | Where-Object { $_.phase -eq "post" })
         $lines = @(
-            "# Generated by tools/convert from .specify/adapters/source/hook-spec.tsv.",
+            "# Generated by tools/convert from .throughline/adapters/source/hook-spec.tsv.",
             "# tools/setup-hooks installs this to .kimi/config.toml (hooks-only; merge with your Kimi config if needed).",
             "# Matchers are best-effort until .kimi/VERIFICATION.md confirms Kimi's exact tool names.",
             ""
@@ -435,7 +437,7 @@ function Emit-Rules($prof, $personas, $commands) {
     elseif ($fmt -eq "gemini") {
         $disp = Get-Field $prof "display" (Get-Field $prof "id")
         $sb = @()
-        $sb += "<!-- generated by tools/convert from .specify/adapters/source/global-rules.md + profiles/antigravity.profile; edit the source, not this file. -->"
+        $sb += "<!-- generated by tools/convert from .throughline/adapters/source/global-rules.md + profiles/antigravity.profile; edit the source, not this file. -->"
         $sb += ""
         $sb += '# Throughline ' + $Dash + ' Antigravity (`GEMINI.md`)'
         $sb += ''
@@ -450,20 +452,20 @@ function Emit-Rules($prof, $personas, $commands) {
         $sb += '- **Personas**: `.agents/personas/*.md` ' + $Dash + ' adopt the matching one when delegating (Orchestrator spawns separate contexts).'
         $sb += '- **Commands**: `.agent/rules/commands/*.md` ' + $Dash + ' one rule file per lifecycle command; follow its runbook when invoked.'
         $sb += '- **Hooks**: `.agents/hooks.json` (machine-local, wired by `tools/setup-hooks` from the staged template).'
-        $sb += '- **Canonical brain**: `.specify/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
+        $sb += '- **Canonical brain**: `.throughline/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
         $sb += ''
         $sb += '> Preview adapter ' + $Dash + ' see `.agents/VERIFICATION.md` before trusting hook enforcement.'
         Write-Generated $path (Apply-Slash ($sb -join "`n") $sep)
         $extra = Get-Field $prof "rules_extra_file"
         if ($extra -ne "") {
             $extraPath = Join-Path $RepoRoot $extra
-            $extraBody = "<!-- generated by tools/convert from .specify/adapters/source/global-rules.md; edit there. -->`n`n$global"
+            $extraBody = "<!-- generated by tools/convert from .throughline/adapters/source/global-rules.md; edit there. -->`n`n$global"
             Write-Generated $extraPath (Apply-Slash $extraBody $sep)
         }
     }
     elseif ($fmt -eq "qwen") {
         $sb = @()
-        $sb += "<!-- generated by tools/convert from .specify/adapters/source/global-rules.md + profiles/qwen.profile; edit the source, not this file. -->"
+        $sb += "<!-- generated by tools/convert from .throughline/adapters/source/global-rules.md + profiles/qwen.profile; edit the source, not this file. -->"
         $sb += ""
         $sb += '# Throughline ' + $Dash + ' Qwen Code (`QWEN.md`)'
         $sb += ''
@@ -478,14 +480,14 @@ function Emit-Rules($prof, $personas, $commands) {
         $sb += '- **Personas**: `.qwen/agents/*.md` ' + $Dash + ' subagents; delegate so the Reviewer stays independent.'
         $sb += '- **Commands**: `.qwen/commands/<ns>/<cmd>.md` ' + $Dash + ' slash names use colons from paths (e.g. `/dev:analyze`); runbooks use dot form in prose.'
         $sb += '- **Guards**: `.qwen/settings.json` ' + $Dash + ' `permissions.deny` for `/standards/` + `/exemplars/` and git push/merge.'
-        $sb += '- **Canonical brain**: `.specify/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
+        $sb += '- **Canonical brain**: `.throughline/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
         $sb += ''
         $sb += '> Preview adapter ' + $Dash + ' see `.qwen/VERIFICATION.md` before trusting permission enforcement.'
         Write-Generated $path (Apply-Slash ($sb -join "`n") $sep)
     }
     elseif ($fmt -eq "kimi") {
         $sb = @()
-        $sb += "<!-- generated by tools/convert from .specify/adapters/source/global-rules.md + profiles/kimi.profile; edit the source, not this file. -->"
+        $sb += "<!-- generated by tools/convert from .throughline/adapters/source/global-rules.md + profiles/kimi.profile; edit the source, not this file. -->"
         $sb += ""
         $sb += '# Throughline ' + $Dash + ' Kimi Code (`.kimi/AGENTS.md`)'
         $sb += ''
@@ -499,14 +501,14 @@ function Emit-Rules($prof, $personas, $commands) {
         $sb += '- **Personas**: `.kimi/personas/*.md` ' + $Dash + ' adopt or delegate via the Agent tool (Orchestrator spawns separate contexts).'
         $sb += '- **Workflows**: `.kimi/workflows/*.md` ' + $Dash + ' lifecycle phase runbook pointers (no native slash-command dir).'
         $sb += '- **Hooks**: `.kimi/config.toml` (machine-local, wired by `tools/setup-hooks` from the staged template).'
-        $sb += '- **Canonical brain**: `.specify/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
+        $sb += '- **Canonical brain**: `.throughline/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
         $sb += ''
         $sb += '> Preview adapter ' + $Dash + ' see `.kimi/VERIFICATION.md` before trusting hook enforcement.'
         Write-Generated $path (Apply-Slash ($sb -join "`n") $sep)
     }
     elseif ($fmt -eq "opencode-index") {
         $sb = @()
-        $sb += "<!-- generated by tools/convert from .specify/adapters/source/global-rules.md + profiles/opencode.profile; edit the source, not this file. -->"
+        $sb += "<!-- generated by tools/convert from .throughline/adapters/source/global-rules.md + profiles/opencode.profile; edit the source, not this file. -->"
         $sb += ""
         $sb += '# Throughline ' + $Dash + ' OpenCode (`.opencode/throughline.md`)'
         $sb += ''
@@ -520,7 +522,7 @@ function Emit-Rules($prof, $personas, $commands) {
         $sb += '- **Personas**: `.opencode/agents/*.md` ' + $Dash + ' subagents; @mention or set `agent` on commands.'
         $sb += '- **Commands**: `.opencode/commands/*.md` ' + $Dash + ' native slash commands (filename = command name).'
         $sb += '- **Guards**: `opencode.json` ' + $Dash + ' declarative `permission` denies on `/standards/` + `/exemplars/` and git push/merge.'
-        $sb += '- **Canonical brain**: `.specify/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
+        $sb += '- **Canonical brain**: `.throughline/extensions/dev/commands/`, `.github/instructions/`, `/standards/`.'
         $sb += ''
         $sb += '> Preview adapter ' + $Dash + ' see `.opencode/VERIFICATION.md` before trusting permission enforcement.'
         Write-Generated $path (Apply-Slash ($sb -join "`n") $sep)
@@ -583,7 +585,7 @@ function Copy-SourceTree([string]$srcSubdir, [string]$dstSubdir, [switch]$AddMar
         $outPath = Join-Path (Join-Path $RepoRoot $dstSubdir) $rel
         $text = ((Read-Utf8 $_.FullName) -replace "`r`n", "`n").TrimEnd("`n")
         if ($AddMarker -and $_.Extension -eq ".md" -and -not $text.StartsWith("<!-- generated")) {
-            $text = "<!-- generated by tools/convert from .specify/adapters/source/$srcSubdir/$rel; edit the source, not this file. -->`n`n" + $text
+            $text = "<!-- generated by tools/convert from .throughline/adapters/source/$srcSubdir/$rel; edit the source, not this file. -->`n`n" + $text
         }
         Write-Generated $outPath $text
     }
@@ -614,14 +616,14 @@ function Emit-ToolDocs {
         $dest = Join-Path $RepoRoot ($map[$rel].Replace('/', '\'))
         $text = ((Read-Utf8 $src) -replace "`r`n", "`n").TrimEnd("`n")
         if ($rel -match '\.md$' -and -not $text.StartsWith("<!-- generated")) {
-            $text = "<!-- generated by tools/convert from .specify/adapters/source/tool-docs/$rel; edit the source, not this file. -->`n`n" + $text
+            $text = "<!-- generated by tools/convert from .throughline/adapters/source/tool-docs/$rel; edit the source, not this file. -->`n`n" + $text
         }
         Write-Generated $dest $text
     }
 }
 
 function Emit-Shared {
-    Write-Host "[shared] canonical GitHub + globals from .specify/adapters/source/"
+    Write-Host "[shared] canonical GitHub + globals from .throughline/adapters/source/"
     Copy-SourceTree "instructions" ".github/instructions" -AddMarker
     Copy-SourceTree "skills" ".github/skills"
     Copy-SourceTree "skills" ".claude/skills"
@@ -642,7 +644,7 @@ function Emit-Shared {
         if (-not (Test-Path $srcPath)) { continue }
         $text = ((Read-Utf8 $srcPath) -replace "`r`n", "`n").TrimEnd("`n")
         if ($name -match '\.md$' -and -not $text.StartsWith("<!-- generated")) {
-            $text = "<!-- generated by tools/convert from .specify/adapters/source/globals/$name; edit the source, not this file. -->`n`n" + $text
+            $text = "<!-- generated by tools/convert from .throughline/adapters/source/globals/$name; edit the source, not this file. -->`n`n" + $text
         }
         Write-Generated (Join-Path $RepoRoot $globalMap[$name]) $text
     }
@@ -668,11 +670,11 @@ function Emit-Manifest($prof) {
     $lines += "  `"status`": `"$(Get-Field $prof 'status')`","
     $lines += "  `"tier`": `"$(Get-Field $prof 'tier')`","
     $lines += "  `"slash_syntax`": `"$(Esc-Json (Get-Field $prof 'slash_example'))`","
-    $lines += "  `"generated_by`": `"tools/convert from .specify/adapters/source + profiles/$id.profile`","
+    $lines += "  `"generated_by`": `"tools/convert from .throughline/adapters/source + profiles/$id.profile`","
     $lines += "  `"entry_points`": {"
     $lines += ($entries -join ",`n")
     $lines += "  },"
-    $lines += "  `"notes`": `"Thin adapter generated from the single source. Canonical procedure lives in .specify/extensions/dev/commands/ and .specify/adapters/source/agents/.`""
+    $lines += "  `"notes`": `"Thin adapter generated from the single source. Canonical procedure lives in .throughline/extensions/dev/commands/ and .throughline/adapters/source/agents/.`""
     $lines += "}"
     Write-Generated $path ($lines -join "`n")
 }

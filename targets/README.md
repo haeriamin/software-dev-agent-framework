@@ -1,7 +1,7 @@
 # Targets — External Project Registry
 
 One `<id>.yml` per external project, created/maintained via `/dev.target` (Orchestrator).
-Template: `.specify/templates/target-template.yml`.
+Template: `.throughline/templates/target-template.yml`.
 
 The framework holds no product code — these entries are the only bridge to where code lives.
 

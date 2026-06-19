@@ -1,6 +1,6 @@
 # Throughline with GitHub Copilot (VS Code)
 
-Copilot uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
+Copilot uses the dot syntax: `/dev.analyze`, `/throughline`.
 
 ## 1. What you need
 - VS Code with GitHub Copilot (agent/chat enabled).
@@ -22,7 +22,7 @@ Open the framework folder in VS Code. The `.github/` assets load on their own: a
 ## 3. First run (load the knowledge, once)
 In Copilot Chat:
 ```
-/speckit.constitution        # review the framework's law; fill in the Ratified date
+/throughline.constitution        # review the framework's law; fill in the Ratified date
 /dev.ingest-standards        # compile /standards/ into the wiki
 /dev.ingest-exemplars        # compile /exemplars/ into the pattern library
 ```
@@ -51,11 +51,11 @@ Cheaper modes:
 
 Phase by phase, when you want the control:
 ```
-/speckit.specify "Add pagination to orders (target: my-app)"
-/speckit.clarify        # answer up to 3 questions
-/speckit.plan           # runs /dev.analyze; /dev.design too if HIGH/CRITICAL
-/speckit.tasks
-/speckit.implement      # chains /dev.implement, /dev.test, /dev.review
+/throughline "Add pagination to orders (target: my-app)"
+/throughline.clarify        # answer up to 3 questions
+/throughline.plan           # runs /dev.analyze; /dev.design too if HIGH/CRITICAL
+/throughline.tasks
+/throughline.implement      # chains /dev.implement, /dev.test, /dev.review
 ```
 
 Single commands, out of band, with no full spec:
@@ -70,7 +70,7 @@ Single commands, out of band, with no full spec:
 Knowledge only: just step 3, then use the skills ad hoc in chat.
 
 ## Notes specific to Copilot
-- The slash syntax is the dot form: `/dev.analyze`, `/speckit.specify`.
+- The slash syntax is the dot form: `/dev.analyze`, `/throughline`.
 - Use the generated `<id>.code-workspace`. Without it, Copilot can't reach the target's files.
 - Agents hand off to each other through the `handoffs:` declared in `.github/agents/*.agent.md`.
 - The [dashboard extension](../07-dashboard.md) gives you a live view of the work queue.

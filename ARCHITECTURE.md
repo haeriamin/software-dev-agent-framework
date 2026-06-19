@@ -1,7 +1,7 @@
 # Throughline
 ## Architecture & Implementation Guide (SDD-native)
 
-> Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML), and the Cursor subagent format (`name` + `description` + `readonly`, Markdown). All Tier A runtimes execute identical canonical runbooks; adapters are generated from `.specify/adapters/source/`.
+> Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML), and the Cursor subagent format (`name` + `description` + `readonly`, Markdown). All Tier A runtimes execute identical canonical runbooks; adapters are generated from `.throughline/adapters/source/`.
 
 ---
 
@@ -31,8 +31,8 @@
 
 A **multi-agent, spec-driven software development platform** running inside VS Code with GitHub Copilot, inside Claude Code, or via the Codex CLI. Three complementary layers:
 
-- **SDD layer** (spec-kit) — every development unit is a *slice* that flows through specify → clarify → plan → tasks → implement → analyze. Provides reproducibility, review gates, and a unified vocabulary for "what we're changing and why."
-- **Dev layer** (the `dev` spec-kit extension) — domain commands (`/dev.analyze`, `/dev.implement`, `/dev.review`, …) and personas (Analyst, Architect, Implementer, Tester, Reviewer, …) that compose into the SDD layer via extension hooks.
+- **Lifecycle layer** (`/throughline.*`) — every development unit is a *slice* that flows through specify → clarify → plan → tasks → implement → analyze. Provides reproducibility, review gates, and a unified vocabulary for "what we're changing and why."
+- **Agent layer** (`/dev.*`) — domain commands (`/dev.analyze`, `/dev.implement`, `/dev.review`, …) and personas (Analyst, Architect, Implementer, Tester, Reviewer, …) that compose into the lifecycle via extension hooks.
 - **Target layer** — the framework is standalone; product code lives at external paths registered in `targets/`. Every command resolves its working surface from the active target.
 
 ### Design Philosophy
@@ -40,7 +40,7 @@ A **multi-agent, spec-driven software development platform** running inside VS C
 | Principle | Implementation |
 |-----------|---------------|
 | **Spec-driven** | Every slice has a `specs/NNN-*` folder with `spec.md`, `plan.md`, `tasks.md` (+ `design.md` for HIGH complexity). No code change without a slice. |
-| **Constitution-bound** | `.specify/memory/constitution.md` is the supreme law; all agents, prompts, and hooks defer to it. |
+| **Constitution-bound** | `.throughline/memory/constitution.md` is the supreme law; all agents, prompts, and hooks defer to it. |
 | **Standalone, multi-project** | Framework state and knowledge live here; code lives at registered external paths. Knowledge compounds across projects. |
 | **Autonomy first, within bounds** | Agents act without asking inside their confidence band; below it, they escalate. |
 | **Standards as law** | All implementation is gated by `/standards/` + curated `/exemplars/`. |
@@ -54,7 +54,7 @@ A **multi-agent, spec-driven software development platform** running inside VS C
 User
   │
   ▼
-[/speckit.*]  ← SDD entry points (specify, plan, tasks, implement, analyze, …)
+[/dev.*]  ← SDD entry points (specify, plan, tasks, implement, analyze, …)
   │
   ▼
 OrchestratorAgent  ◄────────────────────────────────────────────────┐
@@ -74,11 +74,11 @@ All agents share read access to `/wiki/`, `/standards/`, `/exemplars/`, and `/ta
 
 ## 2. Constitution & Governance
 
-`.specify/memory/constitution.md` enumerates seven core principles (Immutable Source of Truth, Knowledge Before Action, Cite or Don't Ship, Annotate Never Silently Skip, Confidence-Gated Autonomy, Reversible Changes Only, Append-Only Operations Log), the write-boundary invariants table, and the amendment process.
+`.throughline/memory/constitution.md` enumerates seven core principles (Immutable Source of Truth, Knowledge Before Action, Cite or Don't Ship, Annotate Never Silently Skip, Confidence-Gated Autonomy, Reversible Changes Only, Append-Only Operations Log), the write-boundary invariants table, and the amendment process.
 
-Every `/speckit.plan` and `/speckit.implement` MUST verify produced artifacts against the active principles before reporting completion. Conflicts with any other file resolve in favor of the constitution.
+Every `/throughline.plan` and `/throughline.implement` MUST verify produced artifacts against the active principles before reporting completion. Conflicts with any other file resolve in favor of the constitution.
 
-Amendment process: `/speckit.constitution` → semantic version bump → `wiki/log.md` entry citing the change.
+Amendment process: `/throughline.constitution` → semantic version bump → `wiki/log.md` entry citing the change.
 
 ---
 
@@ -140,43 +140,43 @@ registered: 2026-06-09
 
 ## 5. SDD Lifecycle
 
-Optionally, before any spec, `/dev.ideate "<rough idea>" [target]` runs a read-only, conversational exploration — distinct approaches with their trade-offs and risks, grounded in the target — and recommends a direction. It writes an ideation note and builds nothing; the lifecycle below still starts fresh at `/speckit.specify`.
+Optionally, before any spec, `/dev.ideate "<rough idea>" [target]` runs a read-only, conversational exploration — distinct approaches with their trade-offs and risks, grounded in the target — and recommends a direction. It writes an ideation note and builds nothing; the lifecycle below still starts fresh at `/throughline`.
 
-Each development slice is one spec-kit feature:
+Each development slice is one Throughline feature:
 
 ```
-/speckit.specify  "Add cursor pagination to my-app's orders endpoint"
+/throughline  "Add cursor pagination to my-app's orders endpoint"
   ↓                                creates specs/NNN-orders-pagination/spec.md
                                    (template: spec-template.md; records Target)
-/speckit.clarify
+/throughline.clarify
   ↓                                resolves [NEEDS CLARIFICATION] markers (max 3)
 
-/speckit.plan
+/throughline.plan
   ↓                                template: plan-template.md
                                    hook: before_plan → /dev.analyze produces
                                    the analysis report that grounds plan.md;
                                    HIGH/CRITICAL slices also run /dev.design
 
-/speckit.tasks
+/throughline.tasks
   ↓                                template: tasks-template.md
                                    atomic, independently testable, ordered by layer
 
-/speckit.implement
+/throughline.implement
   ↓                                executes tasks; each task goes
                                    /dev.implement → /dev.test
                                    hook: after_implement → /dev.review (mandatory)
 
-/speckit.analyze                   cross-artifact consistency check
+/throughline.analyze                   cross-artifact consistency check
   ↓                                hook: after_analyze → optional /dev.audit
 ```
 
-Pre-packaged workflows (`.specify/workflows/`): `dev-feature` (existing codebase) and `dev-greenfield` (new project, inserts `/dev.scaffold` between tasks and implement), plus `dev-bugfix` (micro lane), `dev-explore` (read-only analysis), and `dev-review` (standalone gate). All chain their phases with explicit review gates and are listed in `workflow-registry.json`.
+Pre-packaged workflows (`.throughline/workflows/`): `dev-feature` (existing codebase) and `dev-greenfield` (new project, inserts `/dev.scaffold` between tasks and implement), plus `dev-bugfix` (micro lane), `dev-explore` (read-only analysis), and `dev-review` (standalone gate). All chain their phases with explicit review gates and are listed in `workflow-registry.json`.
 
 ---
 
 ## 6. Agent Roles & Responsibilities
 
-Eight single-purpose personas, no overlap. Canonical bodies live in `.specify/adapters/source/agents/<persona>.agent.md` and are emitted to `.github/agents/<persona>.agent.md` (Copilot) and `.claude/agents/<persona>.md` (Claude Code). Each `/dev.*` command has an agent file at `.specify/adapters/source/agents/dev.<command>.agent.md` (emitted to `.github/agents/`) that delegates the runbook to `.specify/extensions/dev/commands/dev.<command>.md`.
+Eight single-purpose personas, no overlap. Canonical bodies live in `.throughline/adapters/source/agents/<persona>.agent.md` and are emitted to `.github/agents/<persona>.agent.md` (Copilot) and `.claude/agents/<persona>.md` (Claude Code). Each `/dev.*` command has an agent file at `.throughline/adapters/source/agents/dev.<command>.agent.md` (emitted to `.github/agents/`) that delegates the runbook to `.throughline/extensions/dev/commands/dev.<command>.md`.
 
 ### 6.1 OrchestratorAgent
 
@@ -241,7 +241,7 @@ Portfolio-wide quality. Aggregates review reports across targets, identifies sys
 
 ## 7. Extension: Dev Commands
 
-`.specify/extensions/dev/` is a spec-kit extension. Its `extension.yml` declares the fourteen `/dev.*` commands, a `dev-config.yml` template for per-framework overrides, and hook bindings into the SDD lifecycle:
+`.throughline/extensions/dev/` is the agent-command extension. Its `extension.yml` declares the fourteen `/dev.*` commands, a `dev-config.yml` template for per-framework overrides, and hook bindings into the SDD lifecycle:
 
 - `before_plan` → `/dev.analyze` (optional)
 - `before_implement` → `/dev.review` (optional — drift check on prior artifacts)
@@ -311,7 +311,7 @@ Behavioral instructions in `.github/instructions/` are loaded by agents at runti
 - `testing-standards.instructions.md` — Tester protocol: coverage expectations, test layering, evidence format.
 - `review-protocol.instructions.md` — Reviewer pre-review, structural + semantic + standards checks, verdict thresholds.
 - `escalation-protocol.instructions.md` — triggers, escalation artifact format, post-escalation flow.
-- `extension-hooks.instructions.md` — shared protocol for checking `.specify/extensions.yml` hooks before/after each lifecycle phase.
+- `extension-hooks.instructions.md` — shared protocol for checking `.throughline/extensions.yml` hooks before/after each lifecycle phase.
 
 ---
 
@@ -338,7 +338,7 @@ Behavioral instructions in `.github/instructions/` are loaded by agents at runti
 Hooks raise the cost of violation; they are string-matched guards, not a sandbox. The
 Reviewer's source-grounded verification and the human-only merge are the real backstops.
 
-### 10.2 SDD extension hooks (`.specify/extensions.yml`)
+### 10.2 SDD extension hooks (`.throughline/extensions.yml`)
 
 Merged from the `dev` extension. Of note:
 
@@ -349,14 +349,14 @@ Merged from the `dev` extension. Of note:
 
 ### 10.3 Built-in workflows
 
-- `.specify/workflows/speckit/workflow.yml` — generic SDD cycle.
-- `.specify/workflows/dev-feature/workflow.yml` — feature slice on an existing target with `/dev.*` hooks engaged and explicit review gates.
-- `.specify/workflows/dev-greenfield/workflow.yml` — new project: target registration → spec → plan (+design) → tasks → scaffold → implement → review → audit.
-- `.specify/workflows/dev-bugfix/workflow.yml` — the micro lane (implement → test → review) for a contained fix, with the abort-to-standard escape.
-- `.specify/workflows/dev-explore/workflow.yml` — read-only `/dev.analyze` pass before changing an area.
-- `.specify/workflows/dev-review/workflow.yml` — the standalone review gate on a change that already exists.
+- `.throughline/workflows/lifecycle/workflow.yml` — generic SDD cycle.
+- `.throughline/workflows/dev-feature/workflow.yml` — feature slice on an existing target with `/dev.*` hooks engaged and explicit review gates.
+- `.throughline/workflows/dev-greenfield/workflow.yml` — new project: target registration → spec → plan (+design) → tasks → scaffold → implement → review → audit.
+- `.throughline/workflows/dev-bugfix/workflow.yml` — the micro lane (implement → test → review) for a contained fix, with the abort-to-standard escape.
+- `.throughline/workflows/dev-explore/workflow.yml` — read-only `/dev.analyze` pass before changing an area.
+- `.throughline/workflows/dev-review/workflow.yml` — the standalone review gate on a change that already exists.
 
-All workflows are registered in `.specify/workflows/workflow-registry.json`. (Pre-spec ideation is the `/dev.ideate` command rather than a workflow — it is a single read-only step, not a multi-phase cycle.)
+All workflows are registered in `.throughline/workflows/workflow-registry.json`. (Pre-spec ideation is the `/dev.ideate` command rather than a workflow — it is a single read-only step, not a multi-phase cycle.)
 
 ---
 
@@ -560,11 +560,11 @@ Auditor writes `review-reports/portfolio-summary.md` with verdict counts per tar
 One brain, N adapters. The canonical content lives in runtime-neutral files:
 
 ```
-.specify/extensions/dev/commands/*.md        ← runbooks (the WHAT and HOW of each command)
-.specify/memory/constitution.md              ← law
-.specify/adapters/source/instructions/*.md   ← behavioral rules (runtime-neutral prose)
-.specify/adapters/source/skills/**           ← canonical skills (emitted to .github + .claude)
-.specify/adapters/source/agents/*.agent.md   ← Copilot agents + canonical persona bodies
+.throughline/extensions/dev/commands/*.md        ← runbooks (the WHAT and HOW of each command)
+.throughline/memory/constitution.md              ← law
+.throughline/adapters/source/instructions/*.md   ← behavioral rules (runtime-neutral prose)
+.throughline/adapters/source/skills/**           ← canonical skills (emitted to .github + .claude)
+.throughline/adapters/source/agents/*.agent.md   ← Copilot agents + canonical persona bodies
 ```
 
 Generated output (`.github/agents/`, `.claude/`, `.cursor/`, etc.) is **not committed** — run
@@ -576,18 +576,18 @@ The per-tool *wiring* is no longer hand-maintained per tool. It is generated fro
 truth so the tools can't drift apart:
 
 ```
-.specify/adapters/source/      ← personas (*.persona metadata), agents (*.agent.md bodies),
+.throughline/adapters/source/      ← personas (*.persona metadata), agents (*.agent.md bodies),
                                  commands (*.command), instructions/, skills/, hooks/,
                                  tool-docs/, globals/, global-rules.md, hook-spec.tsv
-.specify/adapters/profiles/    ← one *.profile per tool: what to emit, where, in what format
+.throughline/adapters/profiles/    ← one *.profile per tool: what to emit, where, in what format
 tools/convert.{ps1,sh}         ← the generator (PowerShell and bash; byte-identical output)
 tools/install.{ps1,sh}         ← interactive installer (pick tools → convert → wire hooks)
 ```
 
 `tools/convert` renders each tool's persona, command, prompt, hook, and rules files plus manifests
-under `.specify/integrations/`. Generated files carry a "generated by tools/convert" marker and must
+under `.throughline/integrations/`. Generated files carry a "generated by tools/convert" marker and must
 not be hand-edited. CI runs both generators on a clean tree and fails if PowerShell and bash output
-differ (checksum parity). Full detail: `.specify/adapters/README.md`.
+differ (checksum parity). Full detail: `.throughline/adapters/README.md`.
 
 ### 14.2 What each adapter looks like
 
@@ -628,9 +628,9 @@ entries would cost tokens on every interaction while adding zero capability.
 
 Rules for contributors:
 1. Never put substantive procedure in an adapter file — put it in the runbook and reference it.
-2. When adding a command: write the runbook → register it in `extensions.yml` → add `.specify/adapters/source/commands/<ns>.<cmd>.command` and `.specify/adapters/source/agents/<ns>.<cmd>.agent.md` → run `tools/convert` (renders Copilot agent+prompt, Claude command, Codex prompt, Cursor command, Tier B bundle) → update the README tables.
-3. When editing a skill: edit `.specify/adapters/source/skills/<name>/SKILL.md`, then run `tools/convert` (emits byte-identical copies to `.github/skills/` and `.claude/skills/`; `/dev.lint-wiki` checks parity).
-4. Never hand-edit a generated adapter file — edit `.specify/adapters/source/` (or the relevant `*.profile`) and regenerate; CI fails on drift.
+2. When adding a command: write the runbook → register it in `extensions.yml` → add `.throughline/adapters/source/commands/<ns>.<cmd>.command` and `.throughline/adapters/source/agents/<ns>.<cmd>.agent.md` → run `tools/convert` (renders Copilot agent+prompt, Claude command, Codex prompt, Cursor command, Tier B bundle) → update the README tables.
+3. When editing a skill: edit `.throughline/adapters/source/skills/<name>/SKILL.md`, then run `tools/convert` (emits byte-identical copies to `.github/skills/` and `.claude/skills/`; `/dev.lint-wiki` checks parity).
+4. Never hand-edit a generated adapter file — edit `.throughline/adapters/source/` (or the relevant `*.profile`) and regenerate; CI fails on drift.
 
 Slash syntax differs by runtime: `/dev:analyze` (Claude Code) ≡ `/dev.analyze` (Copilot, Codex, Cursor). Docs default to the Claude Code colon form; the mapping is mechanical.
 
@@ -657,7 +657,7 @@ Daily LLM cost is dominated by always-loaded context, so the framework keeps it 
 
 **Dashboard webview** (`SDD: Open Dashboard`): summary cards (targets, active slices, escalations), verdict distribution, slice pipeline table, recent `wiki/log.md` entries.
 
-**Mechanics**: a `FrameworkModel` parses the framework's plain-text artifacts (no database — the repo *is* the database), `FileSystemWatcher`s refresh on change, a status-bar item shows the escalation count. Framework root resolution: `sddDashboard.frameworkRoot` setting → else the first workspace folder containing `.specify/memory/constitution.md` (so it works in the multi-root target workspaces generated by `/dev.target`).
+**Mechanics**: a `FrameworkModel` parses the framework's plain-text artifacts (no database — the repo *is* the database), `FileSystemWatcher`s refresh on change, a status-bar item shows the escalation count. Framework root resolution: `sddDashboard.frameworkRoot` setting → else the first workspace folder containing `.throughline/memory/constitution.md` (so it works in the multi-root target workspaces generated by `/dev.target`).
 
 Build/run: see `tools/dashboard/README.md`.
 
@@ -726,16 +726,16 @@ Agent versions logged in `wiki/log.md` on each update; rollback by reverting the
 | Add new exemplar | Place in `/exemplars/` → `/dev.ingest-exemplars` |
 | Brainstorm before building | `/dev.ideate "<rough idea>" [target]` / `/dev:ideate "<rough idea>" [target]` (read-only; recommends a direction) |
 | Install / wire hooks (once) | `tools/install.ps1` / `tools/install.sh --tool <id>` (generates adapter + runs `setup-hooks`); or `tools/setup-hooks.{ps1,sh}` alone after an OS switch |
-| Start a development slice | `/speckit.specify "<scope>"` (then `clarify` → `plan` → `tasks` → `implement`) |
-| One-shot feature lifecycle | workflow `dev-feature` (`.specify/workflows/`; runner or manual) |
-| One-shot greenfield project | workflow `dev-greenfield` (`.specify/workflows/`; runner or manual) |
+| Start a development slice | `/throughline "<scope>"` (then `clarify` → `plan` → `tasks` → `implement`) |
+| One-shot feature lifecycle | workflow `dev-feature` (`.throughline/workflows/`; runner or manual) |
+| One-shot greenfield project | workflow `dev-greenfield` (`.throughline/workflows/`; runner or manual) |
 | Contained fix / explore / standalone review | workflows `dev-bugfix` / `dev-explore` / `dev-review` |
 | Analyze a target (out-of-band) | `/dev.analyze <target-id> [scope]` |
 | Review a slice (out-of-band) | `/dev.review <slice-id>` |
 | Audit the portfolio | `/dev.audit` |
 | Check wiki health | `/dev.lint-wiki` |
 | Resolve escalations | `/dev.review-escalated` |
-| Amend the constitution | `/speckit.constitution` |
+| Amend the constitution | `/throughline.constitution` |
 
 ### 17.2 File-pattern legend
 
@@ -743,8 +743,8 @@ See `docs/08-customization.md §File-type cheat sheet` (single source — not du
 
 ### 17.3 Placeholders to fill before first production run
 
-- `.specify/extensions/dev/extension.yml` — `repository` URL (after first push)
-- `.specify/memory/constitution.md` — `Ratified` date
+- `.throughline/extensions/dev/extension.yml` — `repository` URL (after first push)
+- `.throughline/memory/constitution.md` — `Ratified` date
 - `dev-config.yml` (from `config-template.yml`) — per-framework overrides
 - `exemplars/` — initial canonical exemplars beyond the shipped samples (human-curated)
 - `standards/` — beyond the shipped `engineering-standards.md`, `api-design.md`, `security-policy.md`, `testing-standards.md`, add as policy is formalized

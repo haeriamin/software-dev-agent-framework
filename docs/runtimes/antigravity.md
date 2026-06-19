@@ -1,6 +1,6 @@
 # Throughline with Antigravity (preview)
 
-Antigravity uses the dot syntax in docs: `/dev.analyze`, `/speckit.specify`. There is no native
+Antigravity uses the dot syntax in docs: `/dev.analyze`, `/throughline`. There is no native
 slash-command folder — lifecycle phases are invoked by name or via the command rules in
 `.agent/rules/commands/`.
 
@@ -45,7 +45,7 @@ More detail in [.agents/README.md](../../.agents/README.md).
 Ask Antigravity to follow these phases (or open the matching files under `.agent/rules/commands/`):
 
 ```
-/speckit.constitution        # review the framework's law; fill in the Ratified date
+/throughline.constitution        # review the framework's law; fill in the Ratified date
 /dev.ingest-standards        # compile /standards/ into the wiki
 /dev.ingest-exemplars        # compile /exemplars/ into the pattern library
 ```
@@ -78,11 +78,11 @@ Cheaper modes:
 Phase by phase:
 
 ```
-/speckit.specify "Add pagination to orders (target: my-app)"
-/speckit.clarify
-/speckit.plan
-/speckit.tasks
-/speckit.implement
+/throughline "Add pagination to orders (target: my-app)"
+/throughline.clarify
+/throughline.plan
+/throughline.tasks
+/throughline.implement
 ```
 
 Single commands:
