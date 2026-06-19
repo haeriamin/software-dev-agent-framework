@@ -4,8 +4,24 @@ Every command available in the framework, for new users and agents. Canonical pr
 for each `/dev.*` command lives in `.specify/extensions/dev/commands/<command>.md`.
 
 **Slash syntax**: this file writes the **Claude Code colon form** (`/dev:analyze`), the default
-across the docs. GitHub Copilot and Codex use the dot form (`/dev.analyze`) — the mapping is
+across the docs. Copilot, Codex, and Cursor use the dot form (`/dev.analyze`); the mapping is
 mechanical.
+
+---
+
+## One-time setup
+
+Pick your tool and run the installer from the repo root. It generates the thin adapter files from
+`.specify/adapters/source/` and wires hooks for your OS.
+
+```bash
+bash tools/install.sh --list                 # Git Bash / macOS / Linux
+bash tools/install.sh --tool claude          # one tool
+powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool claude   # Windows PowerShell
+```
+
+See [docs/runtimes/](docs/runtimes/) for per-tool walkthroughs. To regenerate adapters after editing
+the source: `bash tools/convert.sh --tool <id>` (or `tools/convert.ps1 -Tool <id>`).
 
 ---
 
@@ -47,7 +63,7 @@ Run individually when you want phase-by-phase control instead of `/dev:feature`.
 | Command | Persona | Arguments | Writes |
 |---------|---------|-----------|--------|
 | `/dev:feature` | Orchestrator | `<target-id> "<desc>" [--express] [--micro] [--audit]` | Drives all phase commands (greenfield auto-detected: +design +scaffold; `--micro` collapses to implement→test→review); queue state; log |
-| `/dev:target` | Orchestrator | `register <path> [--id <id>] [--new]` · `inspect <id>` · `update <id> <k>=<v>` · `list` | `targets/<id>.yml`, `<id>.code-workspace`, Claude `settings.local.json` access |
+| `/dev:target` | Orchestrator | `register <path> [--id <id>] [--new]` · `inspect <id>` · `update <id> <k>=<v>` · `list` | `targets/<id>.yml`, `<id>.code-workspace`, per-tool access (Claude `settings.local.json`, workspace for VS Code/Cursor, Codex config note) |
 | `/dev:ingest-standards` | Archivist | — | `wiki/standards-summary.md` (+ concepts, index, log) |
 | `/dev:ingest-exemplars` | Archivist | — | `wiki/pattern-library.md` (+ concepts, index, log) |
 | `/dev:ideate` | Analyst | `"<rough idea>" [target-id]` | `work-queue/pending/<topic>-ideation.md` — read-only brainstorming before any spec; explores options/trade-offs/risks, recommends a direction, builds nothing |
@@ -126,7 +142,7 @@ not worth it for throwaway code — use the cheap options above there.
 ## Typical Flows
 
 ```
-First-time setup     /speckit:constitution → /dev:ingest-standards → /dev:ingest-exemplars
+First-time setup     tools/install.sh --tool <your-tool> → /speckit:constitution → /dev:ingest-standards → /dev:ingest-exemplars
 Add a feature        /dev:target register <path> → /dev:feature <id> "<description>"
 Greenfield project   /dev:target register <path> --new → /dev:feature <id> "<description>"
 Phase-by-phase       /speckit:specify → clarify → plan → [/dev:design] → tasks → [/dev:scaffold] → implement

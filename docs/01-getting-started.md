@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-- **VS Code with GitHub Copilot**, **Claude Code** (CLI or desktop), or **OpenAI Codex**
-  (preview) — the framework is wired for all three; pick any. Per-host setup + usage:
+- **An AI coding tool** — GitHub Copilot (VS Code), Claude Code, Codex, or Cursor (Tier A, hooks);
+  or a rules-only tool like Aider or Windsurf (Tier B, advisory). Pick any; per-host setup:
   [docs/runtimes/](runtimes/).
 - **git** — for the framework repo and for reversible changes on targets.
 - **Node.js 20+** — only if you want to build the [dashboard extension](07-dashboard.md).
@@ -13,28 +13,36 @@
 ```bash
 git clone <repo-url> throughline
 cd throughline
-# Copilot: open the folder in VS Code — .github/ assets load automatically.
-# Claude Code: run `claude` in the folder — CLAUDE.md and .claude/ assets load automatically.
-# Codex (preview): run `codex` in the folder, then /hooks to trust; copy .codex/prompts/*.md to ~/.codex/prompts/.
 
-# One-time, to wire the write-safety hooks for your OS (Claude Code & Codex; Copilot needs nothing):
-powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
-bash tools/setup-hooks.sh                                        # macOS / Linux
+# Pick your tool(s) — generates adapters and wires hooks for your OS:
+bash tools/install.sh --list                    # Git Bash / macOS / Linux
+bash tools/install.sh --tool claude             # one tool
+bash tools/install.sh --all                     # every tool
+
+# Windows without Git Bash:
+powershell -ExecutionPolicy Bypass -File tools\install.ps1 -List
+powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool claude
 ```
 
-No build step, no services, no Python — the repo's markdown files *are* the framework, and the hooks run on PowerShell (Windows) or bash (macOS/Linux). The read-only guard on `/standards/` and `/exemplars/` is on even before you run setup-hooks.
+The installer runs `tools/convert` (renders thin adapters from `.specify/adapters/source/`) and
+`tools/setup-hooks` (per-OS hook wiring). Copilot needs no extra hook step — its hooks file already
+carries a per-OS override. Re-run `tools/setup-hooks.{ps1,sh}` alone if you switch OS later.
+
+No build step, no services, no Python required — the repo's markdown files *are* the framework.
+The read-only guard on `/standards/` and `/exemplars/` is on even before you run the installer
+(Claude Code: declarative deny in `.claude/settings.json`; other tools: hook or rules file).
 
 ## Slash syntax
 
-The three runtimes spell commands differently — same commands, same behavior:
+Tools spell commands differently — same commands, same behavior:
 
-| Runtime | Syntax |
-|---------|--------|
+| Tool | Syntax |
+|------|--------|
 | Claude Code | `/dev:analyze`, `/speckit:specify` |
-| GitHub Copilot | `/dev.analyze`, `/speckit.specify` |
-| Codex (preview) | `/dev.analyze`, `/speckit.specify` |
+| Copilot, Codex, Cursor | `/dev.analyze`, `/speckit.specify` |
+| Aider, Windsurf | no slash commands — adopt personas from the rules bundle |
 
-Docs use the Claude Code colon form. The mapping is mechanical. Full per-host walkthroughs:
+Docs default to the Claude Code colon form. The mapping is mechanical. Full per-host walkthroughs:
 [docs/runtimes/](runtimes/).
 
 ## First run (one time)

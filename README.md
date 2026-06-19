@@ -2,7 +2,7 @@
 
 *An unbroken line from spec to reviewed code: every change cites the rule it follows, the test that proves it, and the reason it exists.*
 
-You describe a change. Throughline turns it into a tested, independently reviewed feature on a branch that only you can merge, using the AI coding tool you already have (GitHub Copilot, Claude Code, or Codex). Your code stays where it is; the framework holds the process, your standards, and the shared memory. It works on any codebase, in any language.
+You describe a change. Throughline turns it into a tested, independently reviewed feature on a branch that only you can merge, using the AI coding tool you already have (GitHub Copilot, Claude Code, Codex, Cursor, Antigravity — with more behind a one-source generator). Your code stays where it is; the framework holds the process, your standards, and the shared memory. It works on any codebase, in any language.
 
 ```bash
 /dev:target register path/to/my-app
@@ -88,32 +88,44 @@ Throughline has also solved a real **SWE-bench Lite** issue end to end (in `pyte
 Close to nothing. Throughline is mostly markdown the model reads; the engine is the AI tool you already have.
 
 - **git** — for the reversible per-change branches (`sdd/<slice>`, [explained above](#how-it-works)) and to read your target's state.
-- **One AI coding tool** — GitHub Copilot in VS Code, Claude Code, or Codex. That's the engine.
+- **One AI coding tool** — GitHub Copilot, Claude Code, Codex, or Cursor (or a rules-only tool like Aider/Windsurf). That's the engine.
 - That's it. spec-kit isn't a separate install (its commands and its bash + PowerShell helper scripts ship inside `.specify/`), and the write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
 
-So on any of the three tools, on Windows/macOS/Linux: clone, run the one-time `tools/setup-hooks.*` to wire the hooks for your OS, and go.
+So on any supported tool, on Windows/macOS/Linux: clone, run `tools/install.*` to generate adapters from `.specify/adapters/source/` and wire hooks, then go. Generated tool folders (`.claude/`, `.cursor/`, `.github/agents/`, etc.) are **not** in git — install is required after every fresh clone.
 
 ## Getting started
 
 ### Pick your tool
 
-Throughline is the same framework behind three thin adapters. Use whichever tool you already have; the commands are identical and only the slash punctuation changes. **These docs default to the Claude Code colon form** (`/dev:feature`); Copilot and Codex use a dot (`/dev.feature`).
+Throughline is the same framework behind many thin adapters, all generated from one source of truth. Use whichever tool you already have; the commands are identical and only the slash punctuation changes. **These docs default to the Claude Code colon form** (`/dev:feature`); the dot-form tools use `/dev.feature`. Run `tools/install.sh --list` (or `install.ps1 -List`) to see every tool, then install the ones you want.
 
-| Tool | Slash syntax | Status | Guide |
-|------|--------------|--------|-------|
-| Claude Code | `/dev:feature` | Supported | [docs/runtimes/claude-code.md](docs/runtimes/claude-code.md) |
-| GitHub Copilot (VS Code) | `/dev.feature` | Supported | [docs/runtimes/copilot.md](docs/runtimes/copilot.md) |
-| Codex | `/dev.feature` | Preview | [docs/runtimes/codex.md](docs/runtimes/codex.md) |
+| Tool | Slash syntax | Tier | Status | Guide |
+|------|--------------|------|--------|-------|
+| Claude Code | `/dev:feature` | A | Supported | [docs/runtimes/claude-code.md](docs/runtimes/claude-code.md) |
+| GitHub Copilot (VS Code) | `/dev.feature` | A | Supported | [docs/runtimes/copilot.md](docs/runtimes/copilot.md) |
+| Codex | `/dev.feature` | A | Preview | [docs/runtimes/codex.md](docs/runtimes/codex.md) |
+| Cursor | `/dev.feature` | A | Preview | [docs/runtimes/cursor.md](docs/runtimes/cursor.md) |
+| **Antigravity** | `/dev.feature` | A | Preview | [docs/runtimes/antigravity.md](docs/runtimes/antigravity.md) |
+| **OpenCode** | `/dev.feature` | A | Preview | [docs/runtimes/opencode.md](docs/runtimes/opencode.md) |
+| **Qwen Code** | `/dev:feature` | A | Preview | [docs/runtimes/qwen.md](docs/runtimes/qwen.md) |
+| **Kimi Code** | `/dev.feature` | A | Preview | [docs/runtimes/kimi.md](docs/runtimes/kimi.md) |
+| Aider, Windsurf | rules file | B | Rules-only | [docs/runtimes/](docs/runtimes/) |
 
-Start here for the overview and a comparison: [docs/runtimes/](docs/runtimes/).
+Tier A tools enforce the guards (hooks); Tier B tools are advisory (rules-only). Start here for the overview and a comparison: [docs/runtimes/](docs/runtimes/).
 
 ### First run
 
+**Required:** run the installer before opening the repo in your AI tool. A fresh clone has no
+`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, or other generated wiring until you do.
+
 ```bash
 git clone <repo-url> && cd throughline
-powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows   ┐ one-time: wire the
-bash tools/setup-hooks.sh                                        # mac/Linux ┘ write-safety hooks
-# open in VS Code (Copilot), or run `claude` (Claude Code), or `codex` (Codex)
+# Windows — pick one:
+powershell -ExecutionPolicy Bypass -File tools\install.ps1   # PowerShell
+bash tools/install.sh                                        # Git Bash (same scripts as macOS/Linux)
+# macOS / Linux:
+bash tools/install.sh
+# open in VS Code (Copilot), or run `claude` (Claude Code), `codex` (Codex), or reload Cursor
 /speckit:constitution && /dev:ingest-standards && /dev:ingest-exemplars   # one-time: load the rules
 /dev:target register path/to/my-app                                       # point at your code
 /dev:feature my-app "Add cursor pagination to the orders endpoint"        # build it
@@ -147,8 +159,8 @@ Does it save tokens? Per task, no, because it runs more steps. Over time it tend
 
 | Folder | What's inside |
 |--------|---------------|
-| `.specify/` | The engine: constitution, command runbooks, templates, workflows |
-| `.github/` · `.claude/` · `.codex/` | The Copilot, Claude Code, and Codex adapters, plus hooks (CI lives in `.github/`) |
+| `.specify/` | The engine: constitution, command runbooks, templates, workflows, and the adapter source of truth (`.specify/adapters/`) |
+| `.github/` · `.claude/` · `.codex/` · `.cursor/` | The per-tool adapters (generated from `.specify/adapters/source/`), plus hooks (CI lives in `.github/`) |
 | `standards/` · `exemplars/` | Your rules and example code, the read-only inputs you write |
 | `wiki/` | What the agents remember, plus an append-only log of everything they do |
 | `specs/` · `work-queue/` · `review-reports/` | Per-task files and status |

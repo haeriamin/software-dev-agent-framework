@@ -10,18 +10,18 @@ Claude Code uses the colon syntax: `/dev:analyze`, `/speckit:specify`.
 ```bash
 git clone <repo-url> throughline
 cd throughline
-claude                      # CLAUDE.md and .claude/ assets load automatically
-```
-On launch it loads `CLAUDE.md` (the rules), the subagents in `.claude/agents/`, and the commands in `.claude/commands/`. There's no build step.
-
-One thing to run once, so the write-safety hooks fire on your OS:
-
-```bash
-powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
-bash tools/setup-hooks.sh                                        # macOS / Linux
+bash tools/install.sh --tool claude          # Git Bash / macOS / Linux
+# Windows (PowerShell):  powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool claude
+claude                                       # CLAUDE.md and .claude/ assets load automatically
 ```
 
-That writes the OS-correct hook wiring into `.claude/settings.local.json` (machine-local, gitignored) — PowerShell scripts on Windows, bash scripts on macOS/Linux, since no single command works on all three. Neither the setup nor the hooks need Python (the scripts use a JSON parser if one is around and a plain-shell fallback otherwise); there's also a `tools/setup-hooks.py` if you'd rather run it with Python. The read-only guard on `/standards/` and `/exemplars/` is declarative in `.claude/settings.json` and is already on before you run any of this.
+The installer generates `.claude/agents/` and `.claude/commands/` from the shared source and wires
+write-safety hooks into `.claude/settings.local.json` (machine-local, gitignored) — PowerShell on
+Windows, bash on macOS/Linux. No Python required. The read-only guard on `/standards/` and
+`/exemplars/` is declarative in `.claude/settings.json` and is already on before install.
+
+Adapter files are generated — edit `.specify/adapters/source/`, then run `tools/convert` (or
+re-run `tools/install`). Do not hand-edit `.claude/agents/` or `.claude/commands/`.
 
 ## 3. First run (load the knowledge, once)
 ```

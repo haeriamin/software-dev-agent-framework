@@ -22,11 +22,59 @@ jobs:
       - run: npm ci
       - run: npm run compile
 
+  adapters:
+    name: Generator parity (ps1 vs bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean generated output
+        run: |
+          rm -rf .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
+            .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
+            .specify/adapters/generated .specify/integrations \
+            AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json
+
+      - name: Generate with PowerShell
+        run: pwsh -NoProfile -File tools/convert.ps1 -Tool all
+
+      - name: Capture PowerShell output checksums
+        run: |
+          find .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
+            .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
+            .specify/adapters/generated .specify/integrations \
+            AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json \
+            .github/copilot-instructions.md .github/pull_request_template.md \
+            -type f 2>/dev/null | sort | xargs -r sha256sum > /tmp/checksums-ps1.txt
+
+      - name: Clean generated output before bash pass
+        run: |
+          rm -rf .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
+            .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
+            .specify/adapters/generated .specify/integrations \
+            AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json
+
+      - name: Regenerate with bash
+        run: bash tools/convert.sh --tool all
+
+      - name: Verify bash parity
+        run: |
+          find .claude .codex .cursor .agent .agents .opencode .qwen .kimi \
+            .github/agents .github/instructions .github/skills .github/prompts .github/hooks \
+            .specify/adapters/generated .specify/integrations \
+            AGENTS.md CLAUDE.md GEMINI.md QWEN.md opencode.json \
+            .github/copilot-instructions.md .github/pull_request_template.md \
+            -type f 2>/dev/null | sort | xargs -r sha256sum > /tmp/checksums-sh.txt
+          diff /tmp/checksums-ps1.txt /tmp/checksums-sh.txt
+
   integrity:
     name: Framework integrity
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generate adapters (required — output is gitignored)
+        run: pwsh -NoProfile -File tools/convert.ps1 -Tool all
 
       - name: Skill parity (.github/skills must equal .claude/skills)
         run: diff -r .github/skills .claude/skills
@@ -34,31 +82,24 @@ jobs:
       - name: Hook smoke tests (bash variants)
         run: |
           chmod +x .claude/hooks/*.sh .github/hooks/scripts/*.sh
-          # Claude PreToolUse hook: immutable path must block with exit 2
           echo '{"tool_name":"Write","tool_input":{"file_path":"standards/x.md"}}' \
             | .claude/hooks/validate-immutable-paths.sh && exit 1 || [ $? -eq 2 ]
-          # Claude PreToolUse hook: normal path must pass
           echo '{"tool_name":"Write","tool_input":{"file_path":"wiki/concepts/x.md"}}' \
             | .claude/hooks/validate-immutable-paths.sh
-          # Copilot PreToolUse hook: immutable path must block with exit 1
           echo '{"tool_input":{"path":"exemplars/x.ts"}}' \
             | .github/hooks/scripts/validate-immutable-paths.sh && exit 1 || [ $? -eq 1 ]
-          # Quality hook must never block
           echo '{"tool_input":{"file_path":"README.md"}}' \
             | .github/hooks/scripts/check-code-quality.sh
 
       - name: Bash-safety hook smoke tests
         run: |
           chmod +x .claude/hooks/validate-bash-safety.sh .github/hooks/scripts/validate-bash-safety.sh
-          # shell write into an immutable dir must block (Claude exit 2 / Copilot exit 1)
           echo '{"tool_input":{"command":"echo x > standards/y.md"}}' \
             | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
           echo '{"tool_input":{"command":"cp a exemplars/b"}}' \
             | .github/hooks/scripts/validate-bash-safety.sh && exit 1 || [ $? -eq 1 ]
-          # git push / merge must block
           echo '{"tool_input":{"command":"git push origin main"}}' \
             | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
-          # normal commands and read-only access to immutable dirs must pass
           echo '{"tool_input":{"command":"npm test"}}' \
             | .claude/hooks/validate-bash-safety.sh
           echo '{"tool_input":{"command":"cat standards/api-design.md"}}' \
@@ -66,10 +107,6 @@ jobs:
 
       - name: Hook wiring resolves to real scripts
         run: |
-          # Claude + Codex hooks are wired per-OS into machine-local files by setup-hooks
-          # (Claude's land in the gitignored .claude/settings.local.json). Generate them for
-          # this OS, then confirm every hook command in every runtime's config points at a
-          # script that exists. This also exercises tools/setup-hooks.py end to end.
           python3 tools/setup-hooks.py
           python3 - <<'PY'
           import json, pathlib, re, sys
@@ -84,9 +121,11 @@ jobs:
                               m = re.search(r'((?:\.github/hooks/scripts|\.claude/hooks)/[\w.-]+)', entry.get(key, ""))
                               if m and not pathlib.Path(m.group(1)).exists():
                                   missing.append(f"{path}: {m.group(1)}")
-          check(".github/hooks/hooks.json", ("command", "windows"))   # Copilot (per-OS in one file)
-          check(".claude/settings.local.json", ("command",))          # Claude (generated above)
-          check(".codex/hooks.json", ("command",))                    # Codex (generated above)
+          check(".github/hooks/hooks.json", ("command", "windows"))
+          check(".claude/settings.local.json", ("command",))
+          check(".codex/hooks.json", ("command",))
+          if pathlib.Path(".cursor/hooks.json").exists():
+              check(".cursor/hooks.json", ("command",))
           if missing:
               print("MISSING HOOK SCRIPTS:", *sorted(set(missing)), sep="\n  "); sys.exit(1)
           print("all referenced hook scripts present")
@@ -96,7 +135,6 @@ jobs:
         run: |
           chmod +x .specify/scripts/bash/*.sh
           .specify/scripts/bash/create-new-feature.sh smoke-test | grep -q '"FEATURE_NUM":"001"'
-          # Fresh template carries a NEEDS CLARIFICATION marker -> prereq check must fail
           .specify/scripts/bash/check-prerequisites.sh plan && exit 1 || true
           rm -rf specs/001-smoke-test .specify/feature.json
 
@@ -104,7 +142,10 @@ jobs:
         run: |
           for f in .github/hooks/hooks.json .claude/settings.json \
                    .specify/workflows/workflow-registry.json .specify/init-options.json \
-                   .specify/integrations/copilot.manifest.json .specify/integrations/claude.manifest.json \
+                   .specify/adapters/generated/cursor/hooks.template.json \
+                   .specify/adapters/generated/antigravity/hooks.template.json \
+                   opencode.json .qwen/settings.json \
                    tools/dashboard/package.json tools/dashboard/tsconfig.json; do
+            [ -f "$f" ] || { echo "MISSING (run convert first): $f"; exit 1; }
             python3 -m json.tool "$f" > /dev/null || { echo "INVALID JSON: $f"; exit 1; }
           done

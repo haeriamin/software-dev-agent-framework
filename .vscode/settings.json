@@ -18,5 +18,7 @@
     "files.readonlyInclude": {
         "standards/**": true,
         "exemplars/**": true
-    }
+    },
+    "files.autoSave": "afterDelay",
+    "editor.fontSize": 14
 }

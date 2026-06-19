@@ -25,6 +25,7 @@ Use this Python script only if you prefer it:
 import json
 import os
 import platform
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -120,6 +121,81 @@ def codex_hooks_json():
     }
 
 
+def cursor_command(sh_relpath):
+    """Map a staged-template `.sh` command to the OS-correct launcher for Cursor."""
+    base = sh_relpath[:-3] if sh_relpath.endswith(".sh") else sh_relpath
+    if IS_WINDOWS:
+        return f"powershell -NoProfile -ExecutionPolicy Bypass -File {base}.ps1"
+    return f"bash {base}.sh"
+
+
+def wire_cursor(root):
+    """Install .cursor/hooks.json from the staged template, rewriting commands for this OS.
+
+    Only runs when the Cursor adapter is present. failClosed stays as staged (false) so a
+    guard-script hiccup never locks the session; flip to true once .cursor/VERIFICATION.md passes.
+    """
+    cursor_dir = os.path.join(root, ".cursor")
+    template = os.path.join(root, ".specify", "adapters", "generated", "cursor", "hooks.template.json")
+    if not (os.path.isdir(cursor_dir) and os.path.exists(template)):
+        return None
+    with open(template, encoding="utf-8") as f:
+        data = json.load(f)
+    for phase in data.get("hooks", {}).values():
+        for entry in phase:
+            if "command" in entry:
+                entry["command"] = cursor_command(entry["command"])
+    out = os.path.join(cursor_dir, "hooks.json")
+    write_json(out, data)
+    return out
+
+
+def wire_kimi(root):
+    """Install .kimi/config.toml from the staged Kimi hooks template."""
+    kimi_dir = os.path.join(root, ".kimi")
+    template = os.path.join(root, ".specify", "adapters", "generated", "kimi", "hooks.template.toml")
+    agents_md = os.path.join(kimi_dir, "AGENTS.md")
+    if not (os.path.exists(agents_md) and os.path.exists(template)):
+        return None
+    with open(template, encoding="utf-8") as f:
+        raw = f.read()
+    def repl(m):
+        script = m.group(1)
+        cmd = cursor_command(f".github/hooks/scripts/{script}.sh")
+        return f'command = "{cmd}"'
+    raw = re.sub(
+        r'command = "\.github/hooks/scripts/([A-Za-z0-9._-]+)\.sh"',
+        repl,
+        raw,
+    )
+    os.makedirs(kimi_dir, exist_ok=True)
+    out = os.path.join(kimi_dir, "config.toml")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(raw)
+        if not raw.endswith("\n"):
+            f.write("\n")
+    return out
+
+
+def wire_antigravity(root):
+    """Install .agents/hooks.json from the staged Antigravity template."""
+    agents_dir = os.path.join(root, ".agents")
+    template = os.path.join(root, ".specify", "adapters", "generated", "antigravity", "hooks.template.json")
+    gemini = os.path.join(root, "GEMINI.md")
+    if not (os.path.exists(gemini) and os.path.exists(template)):
+        return None
+    with open(template, encoding="utf-8") as f:
+        data = json.load(f)
+    for phase in data.get("hooks", {}).values():
+        for entry in phase:
+            if "command" in entry:
+                entry["command"] = cursor_command(entry["command"])
+    os.makedirs(agents_dir, exist_ok=True)
+    out = os.path.join(agents_dir, "hooks.json")
+    write_json(out, data)
+    return out
+
+
 def write_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -127,6 +203,15 @@ def write_json(path, data):
 
 
 def main():
+    guard = os.path.join(ROOT, ".github", "hooks", "scripts", "validate-immutable-paths.sh")
+    if not os.path.exists(guard):
+        print(
+            "ERROR: Hook scripts not found. Run `tools/install` or "
+            "`tools/convert --tool shared` first.",
+            file=sys.stderr,
+        )
+        return 1
+
     os_name = platform.system() or "unknown"
 
     # 1. Claude Code: merge hooks into the gitignored machine-local settings.
@@ -146,11 +231,22 @@ def main():
     if os.path.isdir(os.path.dirname(codex_path)):
         write_json(codex_path, codex_hooks_json())
 
+    # 3. Cursor: install hooks.json from the staged template when the adapter is present.
+    cursor_out = wire_cursor(ROOT)
+    antigravity_out = wire_antigravity(ROOT)
+    kimi_out = wire_kimi(ROOT)
+
     launcher_kind = "powershell + .ps1" if IS_WINDOWS else "bash + .sh"
     print(f"Throughline hooks wired for {os_name} ({launcher_kind}).")
     print(f"  Claude Code: {os.path.relpath(claude_local, ROOT)} (machine-local, gitignored)")
     if os.path.isdir(os.path.dirname(codex_path)):
         print(f"  Codex:       {os.path.relpath(codex_path, ROOT)}")
+    if cursor_out:
+        print(f"  Cursor:      {os.path.relpath(cursor_out, ROOT)} (fail-open until .cursor/VERIFICATION.md passes)")
+    if antigravity_out:
+        print(f"  Antigravity: {os.path.relpath(antigravity_out, ROOT)} (best-effort matchers until .agents/VERIFICATION.md passes)")
+    if kimi_out:
+        print(f"  Kimi Code:   {os.path.relpath(kimi_out, ROOT)} (best-effort matchers until .kimi/VERIFICATION.md passes)")
     print("  Copilot:     .github/hooks/hooks.json already carries a per-OS `windows` override; no action needed.")
     print("  Read-only guard on /standards/ + /exemplars/ is declarative in .claude/settings.json and always on.")
     return 0

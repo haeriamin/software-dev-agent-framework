@@ -1,8 +1,8 @@
 # /dev.target
 
 **Agent**: Orchestrator
-**Reads**: target path (external), `targets/**`, `.claude/settings.json`
-**Writes**: `targets/<id>.yml`, `targets/<id>.code-workspace`; append to `wiki/log.md`
+**Reads**: target path (external), `targets/**`, `.claude/settings.json`, `.specify/integrations/*.manifest.json`
+**Writes**: `targets/<id>.yml`, `targets/<id>.code-workspace`, per-tool access config (see step 7); append to `wiki/log.md`
 **Never writes**: `/standards/**`, `/exemplars/**`, target source files
 
 ## Subcommands
@@ -31,8 +31,12 @@
    { "folders": [ { "name": "framework", "path": ".." },
                   { "name": "<id>", "path": "<absolute-target-path>" } ] }
    ```
-7. **Claude Code access**: add the target path to `permissions.additionalDirectories` in `.claude/settings.local.json` (create the file with a `permissions` key if absent; merge, don't overwrite). This file is gitignored — machine-specific paths never land in the shared `settings.json`. Report the change.
-8. Append to `wiki/log.md`.
+7. **Grant target access for each installed tool.** A tool is "installed" when its adapter manifest exists (`.specify/integrations/<tool>.manifest.json`, written by `tools/convert`). The target path is outside this repo, so each tool needs to be told it may read and write there. Apply only the entries for tools that are installed; report every change.
+   - **Claude Code** (`claude.manifest.json`): add the absolute target path to `permissions.additionalDirectories` in `.claude/settings.local.json` (create the file with a `permissions` key if absent; merge, don't overwrite). Gitignored — machine paths never land in the shared `settings.json`.
+   - **Cursor, Copilot, and any VS Code-based tool**: access comes from the multi-root workspace generated in step 6 — `targets/<id>.code-workspace` already lists the target folder. Tell the human to open that workspace. No per-path permission file is written.
+   - **Codex** (`codex.manifest.json`): Codex sandboxes writes to the workspace root. Add the absolute target path as a writable root in the user's Codex config (`~/.codex/config.toml` → `[sandbox_workspace_write] writable_roots`), or launch Codex with the target as an extra `--cd` root. This is user-level machine config; print the exact line to add rather than editing it silently.
+   - **Tier B tools (Aider, Windsurf)**: no access model to wire — they operate on whatever folder the human opens. Note this in the report.
+8. Append to `wiki/log.md` (record which tools were granted access).
 
 ## Steps — inspect / update / list
 
@@ -43,7 +47,7 @@
 ## Exit Criteria
 
 - `targets/<id>.yml` exists, parseable, with an absolute path that resolves.
-- Workspace file generated; Claude permissions updated; log appended.
+- Workspace file generated; access granted for every installed tool (per step 7); log appended.
 
 ## Failure Modes
 

@@ -9,24 +9,35 @@ there yourself, then run the matching ingest command.
 ## A slash command doesn't appear
 
 - **Claude Code**: commands are `/dev:name` (colon). Restart the session after adding
-  command files. Frontmatter must start at byte 0 — a UTF-8 BOM breaks it (write files
-  without BOM; `.gitattributes` keeps line endings sane).
-- **Copilot**: commands are `/dev.name` (dot); prompt files live in `.github/prompts/`.
-  Make sure you opened the framework folder (or a generated target workspace).
+  command files. Frontmatter must start at byte 0 — a UTF-8 BOM breaks it.
+- **Copilot / Cursor**: commands are `/dev.name` (dot). Copilot: open the framework folder or a
+  target workspace. Cursor: reload the window after `tools/install --tool cursor`.
+- **Codex**: commands live in `~/.codex/prompts/` (global). Re-copy after `tools/convert --tool codex`.
+- **Generated adapters**: if you edited `.specify/adapters/source/`, run `tools/convert` — do not
+  hand-edit `.claude/commands/`, `.cursor/commands/`, etc.
 
 ## Agent can't edit my target
 
-- **Copilot**: open `targets/<id>.code-workspace`, not the framework folder alone — the
-  target must be a workspace folder.
+- **Copilot / Cursor**: open `targets/<id>.code-workspace` — the target must be a workspace folder.
 - **Claude Code**: the target path must be in `permissions.additionalDirectories` in
   `.claude/settings.local.json` — `/dev:target register` adds it; re-run
   `/dev:target inspect <id>` to verify.
+- **Codex**: add the target path to Codex writable roots (see `/dev:target register` output).
 
-## Hooks on macOS/Linux
+## Hooks not firing / wrong OS
 
-`.claude/settings.json` ships wired to the PowerShell hook variants (Windows default).
-Swap each command for its `.sh` sibling per `.claude/hooks/README.md` and
-`chmod +x .claude/hooks/*.sh`. The `.sh` variants need `python3` on PATH.
+Run the installer or hook wiring for your OS:
+
+```bash
+bash tools/install.sh --tool <your-tool>      # Git Bash / macOS / Linux
+powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool <your-tool>
+# Or hooks only after an OS switch:
+bash tools/setup-hooks.sh
+powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1
+```
+
+See `.claude/hooks/README.md`. No Python required. On Windows, use **Git Bash** for the `.sh`
+scripts if you prefer bash over PowerShell.
 
 ## "Analysis is stale" / fingerprint mismatch
 
@@ -53,6 +64,7 @@ Open a workspace containing `.specify/memory/constitution.md`, or set
 
 | Job step | Meaning |
 |----------|---------|
+| Adapters in sync | Regenerated adapters differ from committed — run `tools/convert` and commit |
 | Skill parity | `.github/skills/` and `.claude/skills/` differ — copy the edited file to the other tree |
 | Hook smoke tests | A hook script regressed its block/allow exit codes |
 | Core scripts | `create-new-feature.sh` / `check-prerequisites.sh` behavior changed |

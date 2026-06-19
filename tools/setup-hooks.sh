@@ -10,8 +10,23 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-PY="$(command -v python3 || command -v python || command -v py || true)"
-if [ -n "$PY" ]; then
+if [ ! -f "$ROOT/.github/hooks/scripts/validate-immutable-paths.sh" ]; then
+  echo "ERROR: Hook scripts not found. Run tools/install or tools/convert --tool shared first." >&2
+  exit 1
+fi
+
+# Prefer a Python that actually runs. On Windows Git Bash, `python` is often the Store stub.
+pick_python() {
+  local c
+  for c in python3 py python; do
+    command -v "$c" >/dev/null 2>&1 || continue
+    "$c" -c 'import sys' >/dev/null 2>&1 || continue
+    printf '%s' "$c"
+    return 0
+  done
+  return 1
+}
+if PY="$(pick_python)"; then
   exec "$PY" "$ROOT/tools/setup-hooks.py"
 fi
 
@@ -70,4 +85,32 @@ cat > "$codex_path" <<'JSON'
 }
 JSON
 echo "wrote $codex_path"
+
+# Cursor: install .cursor/hooks.json from the staged template, rewritten for bash.
+# Prefix bare ".github/hooks/scripts/<name>.sh" commands with "bash " so they run without +x.
+cursor_dir="$ROOT/.cursor"
+cursor_template="$ROOT/.specify/adapters/generated/cursor/hooks.template.json"
+if [ -d "$cursor_dir" ] && [ -f "$cursor_template" ]; then
+  sed -E 's#"(\.github/hooks/scripts/[A-Za-z0-9._-]+\.sh)"#"bash \1"#g' "$cursor_template" > "$cursor_dir/hooks.json"
+  echo "wrote $cursor_dir/hooks.json (fail-open until .cursor/VERIFICATION.md passes)"
+fi
+
+# Antigravity: install .agents/hooks.json from the staged template, rewritten for bash.
+agents_dir="$ROOT/.agents"
+ag_template="$ROOT/.specify/adapters/generated/antigravity/hooks.template.json"
+if [ -f "$ROOT/GEMINI.md" ] && [ -f "$ag_template" ]; then
+  mkdir -p "$agents_dir"
+  sed -E 's#"(\.github/hooks/scripts/[A-Za-z0-9._-]+\.sh)"#"bash \1"#g' "$ag_template" > "$agents_dir/hooks.json"
+  echo "wrote $agents_dir/hooks.json (best-effort matchers until .agents/VERIFICATION.md passes)"
+fi
+
+# Kimi Code: install .kimi/config.toml from the staged template, rewritten for bash.
+kimi_dir="$ROOT/.kimi"
+kimi_template="$ROOT/.specify/adapters/generated/kimi/hooks.template.toml"
+if [ -f "$kimi_dir/AGENTS.md" ] && [ -f "$kimi_template" ]; then
+  mkdir -p "$kimi_dir"
+  sed -E 's#command = "\.github/hooks/scripts/([A-Za-z0-9._-]+)\.sh"#command = "bash .github/hooks/scripts/\1.sh"#g' "$kimi_template" > "$kimi_dir/config.toml"
+  echo "wrote $kimi_dir/config.toml (best-effort matchers until .kimi/VERIFICATION.md passes)"
+fi
+
 echo "Throughline hooks wired for macOS/Linux (bash + .sh)."

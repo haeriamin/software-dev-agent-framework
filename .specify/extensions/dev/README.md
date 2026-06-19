@@ -9,5 +9,6 @@ generic speckit cycle into a gated software-development pipeline operating on ex
 - Helper scripts: `scripts/bash/dev-common.sh`, `scripts/powershell/dev-common.ps1`.
 - Config: copy `config-template.yml` → repo-root `dev-config.yml` for overrides.
 
-Runtime adapters (`.github/agents/dev.*.agent.md`, `.claude/commands/dev/*.md`) are thin
-wrappers — never put procedure there; put it in the runbook.
+Runtime adapters (`.github/prompts/`, `.claude/commands/`, `.codex/prompts/`, `.cursor/commands/`,
+etc.) are **generated** from `.specify/adapters/source/` by `tools/convert` — never put procedure
+there; put it in the runbook and the `.command` source stub.

@@ -14,6 +14,19 @@
 # PowerShell is fine with LF, but make it explicit.
 *.ps1 text eol=lf
 
+# Codex personas are TOML; pin LF so the generator's output stays byte-stable across OSes.
+*.toml text eol=lf
+
+# Adapter source of truth (.specify/adapters/source + profiles). The generators parse these with
+# awk/PowerShell; a stray CR on a Windows checkout would leak into generated output and break the
+# convert.ps1 / convert.sh byte-parity that CI enforces. Keep them LF everywhere.
+*.persona text eol=lf
+*.command text eol=lf
+*.profile text eol=lf
+*.tsv text eol=lf
+*.mdc text eol=lf
+.windsurfrules text eol=lf
+
 # Binaries
 *.vsix binary
 *.png binary

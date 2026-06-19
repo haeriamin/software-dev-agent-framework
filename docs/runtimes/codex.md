@@ -13,19 +13,22 @@ Codex uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
 ```bash
 git clone <repo-url> throughline
 cd throughline
-codex                       # AGENTS.md + .codex/ assets load from the repo
-/hooks                      # trust the project's write-safety hooks (once)
+bash tools/install.sh --tool codex           # Git Bash / macOS / Linux
+# Windows (PowerShell):  powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool codex
+codex                                        # AGENTS.md + .codex/ assets load from the repo
+/hooks                                       # trust the project's write-safety hooks (once)
 ```
-Wire the write-safety hooks for your OS once (this rebuilds `.codex/hooks.json` to use PowerShell on Windows or bash on macOS/Linux; no Python needed):
-```bash
-powershell -ExecutionPolicy Bypass -File tools\setup-hooks.ps1   # Windows
-bash tools/setup-hooks.sh                                        # macOS / Linux
-```
-Codex reads custom slash commands from `~/.codex/prompts/`, which is global rather than per-project, so expose the framework's commands by copying them once:
+
+The installer generates `.codex/agents/*.toml` and `.codex/prompts/*.md`, rebuilds `.codex/hooks.json`
+for your OS, and needs no Python. Codex reads custom slash commands from `~/.codex/prompts/` (global),
+so copy the generated prompts once:
+
 ```bash
 cp .codex/prompts/*.md ~/.codex/prompts/        # or symlink; start a new session to pick them up
 ```
-What loads from the repo: the personas in `.codex/agents/*.toml`, the global rules in `AGENTS.md`, and the hooks in `.codex/hooks.json`. More detail in [.codex/README.md](../../.codex/README.md).
+
+What loads from the repo: personas in `.codex/agents/*.toml`, global rules in `AGENTS.md`, hooks in
+`.codex/hooks.json`. More detail in [.codex/README.md](../../.codex/README.md).
 
 ## 3. First run (load the knowledge, once)
 ```

@@ -5,10 +5,31 @@
 ## What it is
 
 It is a set of rules and steps that sit on top of [spec-kit](https://github.com/github/spec-kit)
-and drive GitHub Copilot or Claude Code (a Codex CLI runtime is in preview — see `.codex/`).
-The code parts are small (hooks, scripts, the dashboard). Most of the framework is written instructions that the model follows. So how
+and drive your AI coding tool. Canonical content lives under `.specify/adapters/source/`; after
+clone, run `tools/install.sh` (or `install.ps1`) to generate your tool's wiring locally — generated
+adapter folders are not committed to git.
+scripts, the dashboard). Most of the framework is written instructions that the model follows. So how
 well it works depends on how well the model follows instructions — helped by an independent
 review step and by hooks that block unsafe actions, not by a program that forces every rule.
+
+## Which tools work today
+
+Adapters are generated from `.specify/adapters/source/`, so the list grows by adding a profile, not
+by hand-porting. Tiers describe how much the tool can *enforce* (see
+[`docs/runtimes/README.md`](docs/runtimes/README.md)).
+
+| Tool | Tier | Status |
+|------|------|--------|
+| GitHub Copilot | A (enforced) | **Supported** |
+| Claude Code | A (enforced) | **Supported** |
+| Codex | A (enforced) | Preview — one delegation behaviour to verify (`.codex/VERIFICATION.md`) |
+| Cursor | A (enforced) | Preview — hooks ship fail-open until verified (`.cursor/VERIFICATION.md`) |
+| Antigravity | A (enforced) | Preview — hook matchers best-effort until verified (`.agents/VERIFICATION.md`) |
+| OpenCode | A (enforced) | Preview — declarative permissions until verified (`.opencode/VERIFICATION.md`) |
+| Qwen Code | A (enforced) | Preview — settings permissions until verified (`.qwen/VERIFICATION.md`) |
+| Kimi Code | A (enforced) | Preview — hook matchers best-effort until verified (`.kimi/VERIFICATION.md`) |
+| Aider | B (rules-only) | Rules-only — guards are advisory |
+| Windsurf | B (rules-only) | Rules-only — guards are advisory |
 
 ## What is enforced vs. only instructed
 
@@ -16,8 +37,8 @@ Before you rely on something, check which row it is in.
 
 | Part | How strong |
 |------|------------|
-| `/standards/` and `/exemplars/` are read-only (file + shell hooks) | **Enforced** — blocked by a hook; a determined agent could still find a way, but not by accident. Works on Windows, macOS, and Linux with no Python (run `tools/setup-hooks.ps1` or `.sh` once; the declarative read-only guard is on even before that) |
-| Agents cannot `git push` or `merge` (shell hook + you merge) | **Enforced** — on all three OSes |
+| `/standards/` and `/exemplars/` are read-only (file + shell hooks) | **Enforced** — blocked by a hook; a determined agent could still find a way, but not by accident. Works on Windows, macOS, and Linux with no Python (`tools/install` or `tools/setup-hooks.{ps1,sh}` once; the declarative read-only guard is on even before that) |
+| Agents cannot `git push` or `merge` (shell hook + you merge) | **Enforced** — on every OS, for Tier A tools |
 | Rules that name a `Tool:` (linter, security scan, audit) | **Enforced** — uses the real tool's output |
 | Rules without a `Tool:` | **Only instructed** — the model judges them; results can vary |
 | Confidence score, startup reads, citations, notes | **Only instructed** — backed by the review step, not by a program |

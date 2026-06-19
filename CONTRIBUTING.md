@@ -6,26 +6,45 @@ Thanks for improving the framework. Two rules dominate everything else here:
    Changing thresholds, formula weights, principles, or write boundaries is a constitutional
    amendment (`/speckit.constitution` → human approval → version bump → log entry) — never a
    quiet config edit.
-2. **One brain, two adapters.** Substantive procedure lives ONLY in
-   `.specify/extensions/dev/commands/*.md` (runbooks) and `.github/instructions/*.instructions.md`
-   (protocols). The `.github/` and `.claude/` files are thin adapters. If your PR puts steps into
-   an adapter, it will be asked to move them.
+2. **One brain, N adapters.** Substantive procedure lives ONLY in
+   `.specify/extensions/dev/commands/*.md` (runbooks) and
+   `.specify/adapters/source/instructions/*.instructions.md` (protocols). Per-tool wiring is
+   **generated** from `.specify/adapters/source/` by `tools/convert` — do not hand-edit
+   `.claude/`, `.codex/`, `.cursor/`, or other generated adapter trees. If your PR puts steps
+   into an adapter, it will be asked to move them to the runbook or the source.
 
 ## Adding or changing a command
 
 1. Write/edit the runbook: `.specify/extensions/dev/commands/dev.<name>.md`
    (preconditions, steps, exit criteria, failure modes).
 2. Declare it in `.specify/extensions/dev/extension.yml` (and hook bindings if it joins the lifecycle).
-3. Copilot adapters: `.github/agents/dev.<name>.agent.md` (thin) + `.github/prompts/dev.<name>.prompt.md` (3 lines).
-4. Claude adapter: `.claude/commands/dev/<name>.md` (thin). Do NOT add a per-command Claude
-   subagent — the command file adopts one of the 8 persona subagents; per-command subagents
-   would bloat every session's context (see ARCHITECTURE §14 file-count asymmetry).
-5. Update the command tables in `README.md`, `ARCHITECTURE.md`, `.github/copilot-instructions.md`, `CLAUDE.md`.
+3. Add or edit the source stub: `.specify/adapters/source/commands/<ns>.<cmd>.command`.
+4. For Copilot command agents, edit `.specify/adapters/source/agents/<ns>.<cmd>.agent.md`
+   (canonical agent body for that command).
+5. Run `tools/convert` (or `tools/convert.ps1` / `tools/convert.sh`) — it renders the thin
+   Copilot prompt pointer, Claude command, Codex prompt, Cursor command, and Tier B rules entries.
+6. Do NOT add a per-command Claude subagent — commands adopt one of the 8 persona subagents.
+7. Update command tables in `README.md`, `COMMANDS.md`, `ARCHITECTURE.md`.
+
+## Adding or changing a persona
+
+1. Edit metadata in `.specify/adapters/source/personas/<name>.persona` (tools, sandbox, description).
+2. Edit the **canonical behavioral body** in `.specify/adapters/source/agents/<name>.agent.md`
+   (all runtimes derive persona text from this file).
+3. Run `tools/convert`. Optional Codex-only fields on the `.persona` file: `codex_sandbox_comment`,
+   `codex_note`. Do not hand-edit generated adapter files.
 
 ## Editing skills
 
-Edit `.github/skills/<name>/SKILL.md`, then copy the file to `.claude/skills/<name>/SKILL.md`.
-The two trees must stay **byte-identical** — CI and `/dev.lint-wiki` both fail on drift.
+Edit `.specify/adapters/source/skills/<name>/SKILL.md`, then run `tools/convert`. The generator
+copies skills to `.github/skills/` and `.claude/skills/` byte-identically. CI and `/dev.lint-wiki`
+fail if those two generated trees drift apart.
+
+## Tool README / VERIFICATION docs
+
+Runtime guides that ship beside generated adapters (e.g. `.codex/VERIFICATION.md`,
+`.cursor/README.md`) live in `.specify/adapters/source/tool-docs/` and are emitted by
+`tools/convert`. Edit the source copy, not the generated file.
 
 ## Standards & exemplars
 
@@ -36,8 +55,11 @@ applicable, follow the machine-readable rule format (standards) or the `.meta.md
 
 ## Hooks & scripts
 
-Every hook/script ships in both shells (`.ps1` + `.sh`) with identical behavior. CI smoke-tests
-the bash variants (block/allow exit codes); test PowerShell variants locally on Windows.
+Hook scripts live in `.specify/adapters/source/hooks/` and are emitted to `.github/hooks/scripts/`
+and `.claude/hooks/`. Every hook/script ships in both shells (`.ps1` + `.sh`) with identical
+behavior. CI smoke-tests the bash variants (block/allow exit codes); test PowerShell variants
+locally on Windows. Run `tools/setup-hooks` only after `tools/convert` or `tools/install` has
+generated the hook scripts.
 
 ## Dashboard extension
 
@@ -53,3 +75,9 @@ Machine-specific state never lands in shared files: target access permissions go
 `.claude/settings.local.json` (gitignored), generated `targets/*.code-workspace` files are
 gitignored, and `targets/*.yml` entries contain absolute paths — fine for private team forks,
 but don't commit personal target entries to the public repo.
+
+## Fresh clone
+
+Generated adapter folders are gitignored. After clone, run `tools/install.sh` or
+`tools/install.ps1` before using any runtime. Until then, root `AGENTS.md`, `CLAUDE.md`, and
+`.cursor/rules/` do not exist locally.

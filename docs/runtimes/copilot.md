@@ -9,8 +9,15 @@ Copilot uses the dot syntax: `/dev.analyze`, `/speckit.specify`.
 ## 2. One-time setup
 ```bash
 git clone <repo-url> throughline
+cd throughline
+bash tools/install.sh --tool copilot         # Git Bash / macOS / Linux (regenerates .github/ wiring)
+# Windows (PowerShell):  powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Tool copilot
 ```
-Open the framework folder in VS Code. The `.github/` assets load on their own: the agents in `.github/agents/`, the instructions in `.github/copilot-instructions.md`, and the write-safety hooks in `.github/hooks/hooks.json`. There's no build step. The hooks file already carries a per-OS `windows` override (PowerShell on Windows, bash on macOS/Linux), so there's nothing to wire by hand — unlike the Claude Code and Codex adapters, which need a one-time `tools/setup-hooks.py` run.
+Open the framework folder in VS Code. The `.github/` assets load on their own: agents in
+`.github/agents/`, instructions in `.github/copilot-instructions.md`, and write-safety hooks in
+`.github/hooks/hooks.json`. There's no build step. The hooks file already carries a per-OS
+`windows` override (PowerShell on Windows, bash on macOS/Linux), so Copilot needs no separate
+`setup-hooks` step — the installer just regenerates the adapter from source.
 
 ## 3. First run (load the knowledge, once)
 In Copilot Chat:

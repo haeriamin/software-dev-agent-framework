@@ -1,7 +1,7 @@
 # Throughline
 ## Architecture & Implementation Guide (SDD-native)
 
-> Canonical patterns: [spec-kit](https://github.com/github/spec-kit) for the SDD lifecycle, [Kumo Coding Agent](https://github.com/kumo-ai/kumo-coding-agent) for multi-agent topology. Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), and the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML). All three runtimes execute identical canonical runbooks.
+> Agent files follow the native VS Code Copilot agent format (`description` + `handoffs` frontmatter), the Claude Code subagent format (`name` + `description` + `tools` frontmatter), the Codex CLI subagent format (`name` + `description` + `developer_instructions`, TOML), and the Cursor subagent format (`name` + `description` + `readonly`, Markdown). All Tier A runtimes execute identical canonical runbooks; adapters are generated from `.specify/adapters/source/`.
 
 ---
 
@@ -176,7 +176,7 @@ Pre-packaged workflows (`.specify/workflows/`): `dev-feature` (existing codebase
 
 ## 6. Agent Roles & Responsibilities
 
-Eight single-purpose personas, no overlap. Each persona lives at `.github/agents/<persona>.agent.md` (Copilot) and `.claude/agents/<persona>.md` (Claude Code). Each `/dev.*` command has a thin agent file at `.github/agents/dev.<command>.agent.md` that delegates the runbook to `.specify/extensions/dev/commands/dev.<command>.md` and adopts the appropriate persona.
+Eight single-purpose personas, no overlap. Canonical bodies live in `.specify/adapters/source/agents/<persona>.agent.md` and are emitted to `.github/agents/<persona>.agent.md` (Copilot) and `.claude/agents/<persona>.md` (Claude Code). Each `/dev.*` command has an agent file at `.specify/adapters/source/agents/dev.<command>.agent.md` (emitted to `.github/agents/`) that delegates the runbook to `.specify/extensions/dev/commands/dev.<command>.md`.
 
 ### 6.1 OrchestratorAgent
 
@@ -557,30 +557,59 @@ Auditor writes `review-reports/portfolio-summary.md` with verdict counts per tar
 
 ## 14. Multi-Runtime Strategy
 
-One brain, three adapters (Copilot, Claude Code, Codex). The canonical content lives in
-runtime-neutral files:
+One brain, N adapters. The canonical content lives in runtime-neutral files:
 
 ```
-.specify/extensions/dev/commands/*.md   ← runbooks (the WHAT and HOW of each command)
-.specify/memory/constitution.md         ← law
-.github/instructions/*.instructions.md  ← behavioral rules (runtime-neutral prose)
-.github/skills/**  ≡  .claude/skills/** ← identical skill content
+.specify/extensions/dev/commands/*.md        ← runbooks (the WHAT and HOW of each command)
+.specify/memory/constitution.md              ← law
+.specify/adapters/source/instructions/*.md   ← behavioral rules (runtime-neutral prose)
+.specify/adapters/source/skills/**           ← canonical skills (emitted to .github + .claude)
+.specify/adapters/source/agents/*.agent.md   ← Copilot agents + canonical persona bodies
 ```
 
-Adapters:
+Generated output (`.github/agents/`, `.claude/`, `.cursor/`, etc.) is **not committed** — run
+`tools/install` after clone.
 
-| Layer | Copilot file | Claude Code file | Codex file | Content |
-|-------|--------------|------------------|------------|---------|
-| Global rules | `.github/copilot-instructions.md` | `CLAUDE.md` | `AGENTS.md` | Same rules, same tables |
-| Command entry | `.github/prompts/dev.analyze.prompt.md` (`agent:` pointer) | `.claude/commands/dev/analyze.md` | `.codex/prompts/dev.analyze.md` | Thin: adopt persona, follow runbook, pass `$ARGUMENTS` |
-| Persona | `.github/agents/analyst.agent.md` | `.claude/agents/analyst.md` | `.codex/agents/analyst.toml` | Same persona text; frontmatter differs per runtime (Codex uses `developer_instructions` + `sandbox_mode`) |
-| Hooks | `.github/hooks/hooks.json` | `.claude/settings.json` | `.codex/hooks.json` | Same scripts; Codex matchers use `apply_patch`/`Bash` |
+### 14.1 Adapters are generated from one source
 
-The **Codex adapter** (`.codex/`) is a preview third runtime: 8 personas (`.codex/agents/*.toml`),
-22 commands (`.codex/prompts/*.md`, copied into `~/.codex/prompts/`), `AGENTS.md`, and
-`.codex/hooks.json`. Two runtime behaviours are pending verification before it is on par with the
-other two — autonomous isolated sub-agent spawning, and the `apply_patch` hook payload — see
-`.codex/README.md` and `.codex/VERIFICATION.md`.
+The per-tool *wiring* is no longer hand-maintained per tool. It is generated from a single source of
+truth so the tools can't drift apart:
+
+```
+.specify/adapters/source/      ← personas (*.persona metadata), agents (*.agent.md bodies),
+                                 commands (*.command), instructions/, skills/, hooks/,
+                                 tool-docs/, globals/, global-rules.md, hook-spec.tsv
+.specify/adapters/profiles/    ← one *.profile per tool: what to emit, where, in what format
+tools/convert.{ps1,sh}         ← the generator (PowerShell and bash; byte-identical output)
+tools/install.{ps1,sh}         ← interactive installer (pick tools → convert → wire hooks)
+```
+
+`tools/convert` renders each tool's persona, command, prompt, hook, and rules files plus manifests
+under `.specify/integrations/`. Generated files carry a "generated by tools/convert" marker and must
+not be hand-edited. CI runs both generators on a clean tree and fails if PowerShell and bash output
+differ (checksum parity). Full detail: `.specify/adapters/README.md`.
+
+### 14.2 What each adapter looks like
+
+| Layer | Copilot file | Claude Code file | Codex file | Cursor file | Content |
+|-------|--------------|------------------|------------|-------------|---------|
+| Global rules | `.github/copilot-instructions.md` | `CLAUDE.md` | `AGENTS.md` | `.cursor/rules/throughline.mdc` | Same rules, same tables |
+| Command entry | `.github/prompts/dev.analyze.prompt.md` (`agent:` pointer) | `.claude/commands/dev/analyze.md` | `.codex/prompts/dev.analyze.md` | `.cursor/commands/dev.analyze.md` | Thin: adopt persona, follow runbook, pass `$ARGUMENTS` |
+| Persona | `.github/agents/analyst.agent.md` | `.claude/agents/analyst.md` | `.codex/agents/analyst.toml` | `.cursor/agents/analyst.md` | Same persona text; frontmatter differs per runtime |
+| Hooks | `.github/hooks/hooks.json` | `.claude/settings.json` | `.codex/hooks.json` | `.cursor/hooks.json` (per-OS, staged template) | Same scripts; matchers/format differ per runtime |
+
+### 14.3 Enforcement tiers
+
+Tools differ in how much they can *enforce*. **Tier A** (Copilot, Claude Code, Codex, Cursor) backs
+the guarantees with blocking hooks and supports subagents. **Tier B** (Aider, Windsurf) has no hooks
+and no subagents — the same rules are *instructed* in a rules-only bundle but not enforced; the
+adapter says so plainly. New Tier A tools start as **preview** until a `VERIFICATION.md` spike
+confirms the runtime-specific behaviours (hook blocking, isolated Reviewer spawning).
+
+The **Codex adapter** (`.codex/`) is preview: two runtime behaviours pending verification —
+autonomous isolated sub-agent spawning, and the `apply_patch` hook payload (`.codex/VERIFICATION.md`).
+The **Cursor adapter** (`.cursor/`) is preview: hooks ship fail-open until `.cursor/VERIFICATION.md`
+confirms the shared guard scripts speak Cursor's hook protocol, after which they flip to fail-closed.
 
 ### File-count asymmetry (30 Copilot agents vs 8 Claude subagents — intentional)
 
@@ -599,16 +628,17 @@ entries would cost tokens on every interaction while adding zero capability.
 
 Rules for contributors:
 1. Never put substantive procedure in an adapter file — put it in the runbook and reference it.
-2. When adding a command: runbook → extension.yml → Copilot agent + prompt → Claude command → Codex prompt → README tables.
-3. When editing a skill: edit `.github/skills/<name>/SKILL.md`, then copy to `.claude/skills/<name>/SKILL.md` (they must stay byte-identical; `/dev.lint-wiki` checks this).
+2. When adding a command: write the runbook → register it in `extensions.yml` → add `.specify/adapters/source/commands/<ns>.<cmd>.command` and `.specify/adapters/source/agents/<ns>.<cmd>.agent.md` → run `tools/convert` (renders Copilot agent+prompt, Claude command, Codex prompt, Cursor command, Tier B bundle) → update the README tables.
+3. When editing a skill: edit `.specify/adapters/source/skills/<name>/SKILL.md`, then run `tools/convert` (emits byte-identical copies to `.github/skills/` and `.claude/skills/`; `/dev.lint-wiki` checks parity).
+4. Never hand-edit a generated adapter file — edit `.specify/adapters/source/` (or the relevant `*.profile`) and regenerate; CI fails on drift.
 
-Slash syntax differs by runtime: `/dev:analyze` (Claude Code) ≡ `/dev.analyze` (Copilot and Codex). Docs default to the Claude Code colon form; the mapping is mechanical.
+Slash syntax differs by runtime: `/dev:analyze` (Claude Code) ≡ `/dev.analyze` (Copilot, Codex, Cursor). Docs default to the Claude Code colon form; the mapping is mechanical.
 
 ### Token economy
 
 Daily LLM cost is dominated by always-loaded context, so the framework keeps it deliberately thin:
 
-- `CLAUDE.md`, `.github/copilot-instructions.md`, and `AGENTS.md` (Codex) carry only the non-negotiables, gates, and pointers (~40–50 lines each). Command/skill/agent descriptions are NOT duplicated there — all three runtimes surface them automatically from frontmatter.
+- `CLAUDE.md`, `.github/copilot-instructions.md`, `AGENTS.md` (Codex), and `.cursor/rules/throughline.mdc` carry only the non-negotiables, gates, and pointers (~40–50 lines each). Command/skill/agent descriptions are NOT duplicated there — Tier A runtimes surface them automatically from frontmatter or generated command files.
 - Everything else loads on demand: runbooks only when a command runs, skills only when invoked, instruction files only for the persona that needs them.
 - The bootstrap reads wiki *summaries* (standards-summary, pattern-library), not `/standards/` source — full source is read only by targeted `standards-retrieval` calls and the Reviewer's independence check.
 - Repetition of a rule across files is reserved for constitutional invariants (defense in depth); everything else has one home and pointers.
@@ -695,7 +725,7 @@ Agent versions logged in `wiki/log.md` on each update; rollback by reverting the
 | Add new standards doc | Place in `/standards/` → `/dev.ingest-standards` |
 | Add new exemplar | Place in `/exemplars/` → `/dev.ingest-exemplars` |
 | Brainstorm before building | `/dev.ideate "<rough idea>" [target]` / `/dev:ideate "<rough idea>" [target]` (read-only; recommends a direction) |
-| Wire write-safety hooks (once) | `tools/setup-hooks.ps1` (Windows) / `tools/setup-hooks.sh` (macOS/Linux) — no Python needed |
+| Install / wire hooks (once) | `tools/install.ps1` / `tools/install.sh --tool <id>` (generates adapter + runs `setup-hooks`); or `tools/setup-hooks.{ps1,sh}` alone after an OS switch |
 | Start a development slice | `/speckit.specify "<scope>"` (then `clarify` → `plan` → `tasks` → `implement`) |
 | One-shot feature lifecycle | workflow `dev-feature` (`.specify/workflows/`; runner or manual) |
 | One-shot greenfield project | workflow `dev-greenfield` (`.specify/workflows/`; runner or manual) |

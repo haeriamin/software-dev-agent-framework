@@ -1,18 +1,50 @@
-# Runtimes: Copilot, Claude Code, or Codex
+# Runtimes: bring your own tool
 
-Throughline is one framework behind three thin adapters. The process, rules, agents, and knowledge are shared and don't depend on which tool you run; each tool just wires them in its own way. Pick whichever one you already use. The commands are the same across all three, and the only real difference is the slash punctuation.
+Throughline is one framework ("one brain") behind many thin adapters. The process, rules, agents, and knowledge are shared and don't depend on which tool you run; each tool just wires them in its own way. Pick whichever one you already use. The commands are the same across every tool, and the main difference is the slash punctuation.
 
-| Tool | Install | Slash syntax | Status | Reach for it if… |
-|------|---------|--------------|--------|------------------|
-| **GitHub Copilot** (VS Code) | VS Code + Copilot | `/dev.analyze` (dot) | Supported | You live in VS Code |
-| **Claude Code** | `claude` CLI / desktop | `/dev:analyze` (colon) | Supported | You want a terminal-native agent |
-| **Codex** | `codex` CLI / desktop | `/dev.analyze` (dot) | Preview | You're on OpenAI Codex |
+Every adapter is generated from a single source of truth (`.specify/adapters/source/`) by `tools/convert`. You don't hand-edit adapter files — you pick your tools with the installer:
+
+```bash
+# macOS / Linux                          # Windows (Git Bash — from repo root)
+bash tools/install.sh                     "C:\Program Files\Git\bin\bash.exe" tools/install.sh
+bash tools/install.sh --list              ... --list
+bash tools/install.sh --tool cursor       ... --tool cursor
+```
+
+The installer generates the chosen tool's adapter and wires its hooks for your OS.
+
+## Enforcement tiers
+
+Tools differ in how much of the constitution they can *enforce* (not just be told). That's the tier:
+
+| Tier | What it means | Tools |
+|------|---------------|-------|
+| **A — enforced** | Blocking hooks back the guarantees: writes to `/standards/` + `/exemplars/` are blocked, `git push`/merge is blocked, and `wiki/log.md` is appended automatically. | Claude Code, GitHub Copilot, Codex, Cursor, Antigravity, OpenCode, Qwen Code, Kimi Code |
+| **B — rules-only** | No hooks and no subagents. The same rules are *instructed* in a rules file but not enforced — you honor them yourself. Good for editing; use a Tier A tool when the guarantees matter. | Aider, Windsurf |
+
+| Tool | Slash syntax | Tier | Status | Reach for it if… |
+|------|--------------|------|--------|------------------|
+| **GitHub Copilot** (VS Code) | `/dev.analyze` (dot) | A | Supported | You live in VS Code |
+| **Claude Code** | `/dev:analyze` (colon) | A | Supported | You want a terminal-native agent |
+| **Codex** | `/dev.analyze` (dot) | A | Preview | You're on OpenAI Codex |
+| **Cursor** | `/dev.analyze` (dot) | A | Preview | You work in Cursor |
+| **Antigravity** | `/dev.analyze` (dot) | A | Preview | Google Antigravity agent IDE |
+| **OpenCode** | `/dev.analyze` (dot) | A | Preview | OpenCode terminal agent |
+| **Qwen Code** | `/dev:analyze` (colon from paths) | A | Preview | Qwen Code CLI |
+| **Kimi Code** | `/dev.analyze` (dot, workflows) | A | Preview | Kimi Code CLI |
+| **Aider** | n/a (rules file) | B | Rules-only | You drive Aider and accept advisory guards |
+| **Windsurf** | n/a (rules file) | B | Rules-only | You work in Windsurf and accept advisory guards |
 
 Step-by-step guide for each:
 
 - [Copilot](copilot.md)
 - [Claude Code](claude-code.md)
 - [Codex](codex.md) (preview, with one runtime behaviour still to verify; see the page)
+- [Cursor](cursor.md) (preview; hooks ship fail-open until the verification spike passes)
+- [Antigravity](antigravity.md) (preview; hook matchers are best-effort until verified)
+- [OpenCode](opencode.md) (preview; declarative permissions until verified)
+- [Qwen Code](qwen.md) (preview; settings permissions until verified)
+- [Kimi Code](kimi.md) (preview; hook matchers are best-effort until verified)
 
 ## The five ways to use it
 
@@ -33,4 +65,8 @@ Read these once and they apply on any tool:
 - **Gates and the human merge.** Every change is tested, independently reviewed, and merged only by you. See [Quality Gates](../06-quality-gates.md).
 - **Every command on one page.** See [COMMANDS.md](../../COMMANDS.md).
 
-Whichever tool you pick, the agents never merge or push. That stays your call.
+Whichever tool you pick, the agents never merge or push. That stays your call. On a Tier B tool that rule is advisory — the tool can't block it — so it's on you.
+
+## Adding another tool
+
+Adapters are generated, so adding a tool is mostly data, not code. See [`.specify/adapters/README.md`](../../.specify/adapters/README.md): add one `*.profile`, run `tools/convert`, and the personas, commands, hooks, and rules render in that tool's format from the shared source.
