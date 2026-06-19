@@ -7,9 +7,9 @@ The constitution carries its own version; amendments are logged in `wiki/log.md`
 
 ### Added
 - **Multi-tool adapter generator** — `tools/convert.{ps1,sh}` and `tools/install.{ps1,sh}` render
-  thin per-tool wiring from `.throughline/adapters/source/` (personas, commands, hooks, rules). Six
-  tools: Claude Code, Copilot, Codex, Cursor (Tier A); Aider, Windsurf (Tier B rules-only). CI
-  fails on adapter drift and ps1/bash parity.
+  thin per-tool wiring from `.throughline/adapters/source/` (personas, commands, hooks, rules). Ten
+  tools: Claude Code, Copilot, Codex, Cursor, Antigravity, OpenCode, Qwen Code, Kimi Code (Tier A);
+  Aider, Windsurf (Tier B rules-only). CI fails on adapter drift and ps1/bash parity.
 - **Cursor runtime adapter (preview)** — `.cursor/agents/`, `.cursor/commands/`,
   `.cursor/rules/throughline.mdc`, staged hooks template; see `.cursor/VERIFICATION.md`.
 - **Codex CLI runtime adapter (preview)** — generated from shared source; 8 personas, 22 commands,

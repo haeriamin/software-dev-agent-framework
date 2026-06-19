@@ -43,7 +43,7 @@ A change without spec + standard citations is invalid and MUST be rejected by th
 
 ### IV. Annotate, Never Silently Skip
 
-Work that cannot be completed confidently MUST be left in a safe state with a structured `DEV-TODO` annotation and an entry in `wiki/exception-registry.md`. Silent omission of a requirement, silent stubbing, or unflagged partial implementation is forbidden.
+Work that cannot be completed confidently MUST be left in a safe state with a structured `DEV-STATUS` annotation and an entry in `wiki/exception-registry.md`. Silent omission of a requirement, silent stubbing, or unflagged partial implementation is forbidden.
 
 Annotation format is fixed (see `.github/instructions/implementation-rules.instructions.md` §Unresolved Work).
 
@@ -165,4 +165,4 @@ easily follow is a finding, not a matter of taste.
 - Complexity beyond the simplest workable solution MUST be justified against a specific principle (typically Principle V or the review thresholds).
 - Runtime behavioral guidance lives in `.github/instructions/*.instructions.md`; those files refine but never override this document.
 
-**Version**: 0.2.0 | **Ratified**: [TBD — fill on first formal review] | **Last Amended**: 2026-06-13 (new section: Output Language — all artifacts written for people must use plain, simple English; Reviewer enforces)
+**Version**: 0.2.0 | **Ratified**: 2026-06-09 | **Last Amended**: 2026-06-13 (new section: Output Language — all artifacts written for people must use plain, simple English; Reviewer enforces)

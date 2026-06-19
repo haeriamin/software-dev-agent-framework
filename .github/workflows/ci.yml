@@ -76,6 +76,14 @@ jobs:
       - name: Generate adapters (required — output is gitignored)
         run: pwsh -NoProfile -File tools/convert.ps1 -Tool all
 
+      - name: Root adapter files generate non-empty (AGENTS.md, CLAUDE.md)
+        run: |
+          for f in AGENTS.md CLAUDE.md; do
+            [ -s "$f" ] || { echo "MISSING or EMPTY: $f — should be generated from global-rules.md via the rules emitter"; exit 1; }
+            grep -q "Throughline" "$f" || { echo "UNEXPECTED CONTENT: $f"; exit 1; }
+          done
+          echo "AGENTS.md and CLAUDE.md generated OK"
+
       - name: Skill parity (.github/skills must equal .claude/skills)
         run: diff -r .github/skills .claude/skills
 

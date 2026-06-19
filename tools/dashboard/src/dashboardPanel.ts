@@ -13,6 +13,16 @@ const ICONS = {
   inbox: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13v5H4v-5z"/><path d="M4 13h4l1.5 2.5h5L16 13h4"/></svg>`,
 };
 
+// CSP nonce for the single inline <script>; regenerated on every render.
+function getNonce(): string {
+  let text = "";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
 export class DashboardPanel {
   private static current: DashboardPanel | undefined;
   private readonly panel: vscode.WebviewPanel;
@@ -62,8 +72,15 @@ export class DashboardPanel {
     this.panel.webview.html = model ? this.render(model) : this.renderEmpty();
   }
 
-  private shell(body: string): string {
+  private shell(body: string, nonce: string): string {
+    const csp = [
+      `default-src 'none'`,
+      `img-src ${this.panel.webview.cspSource} https: data:`,
+      `style-src ${this.panel.webview.cspSource} 'unsafe-inline'`,
+      `script-src 'nonce-${nonce}'`,
+    ].join("; ");
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>${STYLES}</style></head><body><div class="wrap">${body}</div></body></html>`;
   }
@@ -77,10 +94,11 @@ export class DashboardPanel {
       <div class="panel"><div class="empty">${ICONS.inbox}
         <div>No framework root found.</div>
         <div class="empty-hint">Open the folder containing <code>.throughline/memory/constitution.md</code>,
-        or set <code>sddDashboard.frameworkRoot</code>.</div></div></div>`);
+        or set <code>sddDashboard.frameworkRoot</code>.</div></div></div>`, getNonce());
   }
 
   private render(model: FrameworkModel): string {
+    const nonce = getNonce();
     const logTailSize = vscode.workspace.getConfiguration("sddDashboard").get<number>("logTail", 15);
     const { stats, slices, queue, log } = model.snapshot(logTailSize);
     const escalated = queue.filter((q) => q.state === "escalated");
@@ -209,13 +227,13 @@ export class DashboardPanel {
           : emptyRow("No operations logged yet.")
       )}
 
-      <script>
+      <script nonce="${nonce}">
         const api = acquireVsCodeApi();
         document.getElementById("refresh").addEventListener("click", () => api.postMessage({ command: "refresh" }));
         for (const row of document.querySelectorAll("tr.link")) {
           row.addEventListener("click", () => api.postMessage({ command: "open", file: row.dataset.file }));
         }
-      </script>`);
+      </script>`, nonce);
   }
 }
 

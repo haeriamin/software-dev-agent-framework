@@ -11,7 +11,7 @@ $ti = $data
 if ($null -ne $data.tool_input) { $ti = $data.tool_input }
 
 $filePath = $null
-foreach ($field in @("path", "file_path", "target", "destination")) {
+foreach ($field in @("file_path", "path", "notebook_path", "target", "destination")) {
     $val = $ti.$field
     if ($null -ne $val -and "$val" -ne "") { $filePath = "$val"; break }
 }

@@ -77,7 +77,7 @@ Run individually when you want phase-by-phase control instead of `/dev:feature`.
 | `/dev:review` | Reviewer | `<slice-id>` | `review-reports/<target>/<slice>-review.md` — PASS / CONDITIONAL_PASS / FAIL |
 | `/dev:audit` | Auditor | `[target-id]` | `review-reports/portfolio-summary.md` + `recommendations.md` |
 | `/dev:lint-wiki` | Archivist | `[--write]` | Findings table (links, staleness, citation + skill parity, log integrity, concept-page scope) |
-| `/dev:review-escalated` | Orchestrator + human | — | `wiki/exception-registry.md` entries + queue moves; waits for your decisions |
+| `/dev:review-escalated` | Orchestrator + human + Archivist | — | `wiki/exception-registry.md` entries + queue moves; waits for your decisions |
 
 ---
 

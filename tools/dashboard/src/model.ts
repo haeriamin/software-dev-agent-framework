@@ -111,9 +111,19 @@ function readFlatYaml(file: string): Record<string, string> {
   }
   for (const line of text.split(/\r?\n/)) {
     const m = /^([a-z_]+):\s*(.*)$/.exec(line);
-    if (m) {
-      out[m[1]] = m[2].trim().replace(/^"|"$/g, "");
+    if (!m) {
+      continue;
     }
+    let value = m[2].trim();
+    if (value.startsWith('"')) {
+      // Quoted scalar: take content up to the closing quote (drops any trailing # comment).
+      const end = value.indexOf('"', 1);
+      value = end >= 0 ? value.slice(1, end) : value.slice(1);
+    } else {
+      // Unquoted scalar: strip a trailing " # comment" (YAML comments start at whitespace + #).
+      value = value.replace(/\s+#.*$/, "").trim();
+    }
+    out[m[1]] = value;
   }
   return out;
 }
@@ -192,7 +202,11 @@ export class FrameworkModel {
       tasksDone = (tasksText.match(/^\s*-\s*\[[xX]\]/gm) ?? []).length;
     }
 
-    const sliceReports = reports.filter((r) => r.name.startsWith(id) && r.kind === "review");
+    // Match this slice's own review reports by exact name AND target, so two targets that each
+    // have a same-numbered slice (e.g. 001-*) never cross-attribute each other's verdicts.
+    const sliceReports = reports.filter(
+      (r) => r.kind === "review" && r.name === `${id}-review` && (target === "?" || r.target === target)
+    );
     const verdict = sliceReports.length > 0 ? sliceReports[sliceReports.length - 1].verdict : null;
 
     let phase: SlicePhase;
@@ -259,7 +273,9 @@ export class FrameworkModel {
       for (const e of entries) {
         const full = path.join(dir, e.name);
         if (e.isDirectory()) {
-          walk(full, e.name);
+          // The target is the first-level directory under review-reports/; deeper
+          // directories (e.g. per-slice subfolders) keep that same top-level target.
+          walk(full, target === "-" ? e.name : target);
         } else if (e.isFile() && e.name.endsWith(".md")) {
           out.push(this.readReport(full, target));
         }
@@ -281,7 +297,9 @@ export class FrameworkModel {
       kind = "portfolio";
     }
     const verdictMatch = /\b(CONDITIONAL_PASS|PASS|FAIL)\b/.exec(text);
-    const confMatch = /confidence[^0-9]*(0\.\d{1,2}|1\.0+)/i.exec(text);
+    // Exclude '=' from the gap so the verdict line ("confidence 0.96") wins over the
+    // formula line ("confidence = 0.40\u00b7..."), regardless of their order in the report.
+    const confMatch = /confidence[^0-9=]*(0\.\d{1,2}|1\.0+)/i.exec(text);
     return {
       target,
       name,
@@ -303,15 +321,22 @@ export class FrameworkModel {
       .slice(-n)
       .reverse();
     return rows.map((row) => {
-      const cells = row.split("|").map((c) => c.trim());
-      // | ts | agent | command | target | verdict | summary | artifacts |
+      // Strip the leading/trailing table pipes first, then split. Columns:
+      // ts | agent | command | target | verdict | summary | artifacts
+      const cells = row
+        .replace(/^\s*\|/, "")
+        .replace(/\|\s*$/, "")
+        .split("|")
+        .map((c) => c.trim());
+      // A literal pipe inside summary/artifacts only shifts the trailing columns, so keep the
+      // five fixed leading fields and re-join any overflow into summary (artifacts is dropped).
       return {
-        timestamp: cells[1] ?? "",
-        agent: cells[2] ?? "",
-        command: cells[3] ?? "",
-        target: cells[4] ?? "",
-        verdict: cells[5] ?? "",
-        summary: cells[6] ?? "",
+        timestamp: cells[0] ?? "",
+        agent: cells[1] ?? "",
+        command: cells[2] ?? "",
+        target: cells[3] ?? "",
+        verdict: cells[4] ?? "",
+        summary: cells.length > 6 ? cells.slice(5, cells.length - 1).join(" | ") : (cells[5] ?? ""),
       };
     });
   }

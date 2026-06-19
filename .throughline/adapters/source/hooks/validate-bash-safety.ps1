@@ -15,7 +15,9 @@ $cmd = $data.tool_input.command
 if ($null -eq $cmd -or "$cmd" -eq "") { exit 0 }
 $c = "$cmd".Replace('\', '/')
 
-if ($c -match '(^|[;&|"]|\\n)\s*git(\s+(-c\s+\S+|-C\s+\S+|--[a-zA-Z-]+(=\S+)?|-[a-zA-Z]+))*\s+(push|merge)([^a-zA-Z0-9_]|$)') {
+# (?m) so ^ and $ anchor at every line, not just the whole string: a real newline before
+# `git push` (e.g. "echo hi`ngit push") must be caught the same way the line-oriented .sh grep catches it.
+if ($c -match '(?m)(^|[;&|"]|\\n)\s*git(\s+(-c\s+\S+|-C\s+\S+|--[a-zA-Z-]+(=\S+)?|-[a-zA-Z]+))*\s+(push|merge)([^a-zA-Z0-9_]|$)') {
     Write-Output "BLOCKED: 'git push' / 'git merge' are human-only actions (Constitution Principle VI)."
     Write-Output "Present the sdd/<slice> branch in your report; the human merges."
     exit 2

@@ -30,7 +30,7 @@ Tools differ in how much of the constitution they can *enforce* (not just be tol
 | **Cursor** | `/dev.analyze` (dot) | A | Preview | You work in Cursor |
 | **Antigravity** | `/dev.analyze` (dot) | A | Preview | Google Antigravity agent IDE |
 | **OpenCode** | `/dev.analyze` (dot) | A | Preview | OpenCode terminal agent |
-| **Qwen Code** | `/dev:analyze` (colon from paths) | A | Preview | Qwen Code CLI |
+| **Qwen Code** | `/dev:analyze` (colon form) | A | Preview | Qwen Code CLI |
 | **Kimi Code** | `/dev.analyze` (dot, workflows) | A | Preview | Kimi Code CLI |
 | **Aider** | n/a (rules file) | B | Rules-only | You drive Aider and accept advisory guards |
 | **Windsurf** | n/a (rules file) | B | Rules-only | You work in Windsurf and accept advisory guards |

@@ -2,7 +2,7 @@
 
 *An unbroken line from spec to reviewed code: every change cites the rule it follows, the test that proves it, and the reason it exists.*
 
-You describe a change. Throughline turns it into a tested, independently reviewed feature on a branch that only you can merge, using the AI coding tool you already have (GitHub Copilot, Claude Code, Codex, Cursor, Antigravity — with more behind a one-source generator). Your code stays where it is; the framework holds the process, your standards, and the shared memory. It works on any codebase, in any language.
+You describe a change. Throughline turns it into a tested, independently reviewed feature on a branch that only you can merge — using the AI coding tool you already have. Your code stays where it is; the framework holds the process, your standards, and the shared memory. It works on any codebase, in any language.
 
 ```bash
 /dev:target register path/to/my-app
@@ -16,41 +16,28 @@ You describe a change. Throughline turns it into a tested, independently reviewe
 
 ## What it is
 
-Throughline is a spec-driven, multi-agent layer that drives your AI coding tool. You describe a change; a team of eight single-purpose agents specs it, plans it, writes it on a branch, tests it, and an independent reviewer checks it against your standards before anyone calls it done. Nothing merges without you. The process and the knowledge live in this repo. Your product code never does.
+Throughline is a spec-driven, multi-agent layer that drives your AI coding tool. You describe a change; a team of eight single-purpose agents specs it, plans it, writes it on a branch, tests it, and an **independent reviewer** checks it against your standards before anyone calls it done. Nothing merges without you. The process and the knowledge live in this repo; your product code never does.
+
+→ New here? Start with the [user guide](docs/README.md) and [core concepts](docs/02-concepts.md).
 
 ## What it's good for (and what it's not)
 
-Reach for it on a change you'd want a careful teammate to review. You name a registered project (say `orders-api`) and describe the change in plain words; here's what you get back:
+Reach for it on a change you'd want a careful teammate to review:
 
-- **Ship a feature, safely.**
-  `/dev:feature orders-api "add cursor pagination to GET /orders"`
-  → it specs the change, writes it on a branch, adds tests, and an independent reviewer signs off against your standards before *you* merge.
-- **Fix a bug, with proof it's fixed.**
-  `/dev:feature orders-api "GET /orders returns the wrong page when ?page is negative" --micro`
-  → a test that fails before the fix and passes after, plus a one-line record of why it changed — not just a patch. (That's the exact shape of the real [pytest bug](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) it fixed end to end.)
-- **Get your bearings before touching unfamiliar code.**
-  `/dev:analyze orders-api src/billing`
-  → a grounded map of the modules and the conventions they actually follow, so your change starts from how the code really works.
-- **Get a second opinion on a change someone already made.**
-  `/dev:review orders-pagination` (the change's slice)
-  → the reviewer re-reads your standards from source and returns PASS / CONDITIONAL_PASS / FAIL with cited reasons.
+- **Ship a feature** — `/dev:feature orders-api "add cursor pagination to GET /orders"` specs it, writes it on a branch, adds tests, and has an independent reviewer sign off before *you* merge.
+- **Fix a bug, with proof** — add `--micro` for a test that fails before the fix and passes after, plus a one-line record of why it changed (the exact shape of a real [pytest bug](docs/validation-runs/2026-06-16-swebench-pytest-11143.md) it fixed end to end).
+- **Get your bearings** — `/dev:analyze orders-api src/billing` maps the modules and the conventions they actually follow.
+- **Second opinion** — `/dev:review <slice>` re-reads your standards from source and returns PASS / CONDITIONAL_PASS / FAIL with cited reasons.
 
-**Skip it** when there's nothing to review or record — a throwaway script, a one-line tweak, or a plain question like *"what does this function do?"*. Those go to your AI tool's normal chat. The rule of thumb: **a change goes through Throughline; a question goes to plain chat.**
-
-The full set, with examples, is in [What to use Throughline for](docs/use-cases.md).
+**Skip it** for throwaway scripts, one-line tweaks, or plain questions — those go to your tool's normal chat. The rule of thumb: **a change goes through Throughline; a question goes to plain chat.** Full examples: [what to use Throughline for](docs/use-cases.md).
 
 ## Why it exists
 
-Frontier models are great at the happy path and bad at the boring parts: forgotten input validation, the edge cases, the error handling. These are *specification-completeness* bugs, and asking the model for "more" or "thorough" tests doesn't fix them. It just writes more happy-path tests.
+Frontier models nail the happy path and miss the boring parts: forgotten validation, edge cases, error handling. Asking for "more" or "thorough" tests doesn't fix these *specification-completeness* bugs — it just adds happy-path tests.
 
-What does work is grounding. Tie each test to a rule in an enumerated spec, then let an independent reviewer check the result against the source standards. We measured this in a controlled study of LLM code generation:
+What works is **grounding**: tie each test to an enumerated spec rule, then have an independent reviewer check the result against the source standards. In a controlled study this produced correct code far more often than a strong "test the edges" baseline, held across three model families, and cut false rejections — the gain showing up exactly on the spec-completeness bugs that dominate real one-shot failures (on clean algorithmic problems it neither helps nor hurts).
 
-- It produced correct code **38 points** more often than a strong baseline that was already told to probe edges and invalid inputs. The lever was the grounding, not the number of tests; doubling the test budget barely helped.
-- The effect held on three different model families: Claude (+38), GPT-5.3-codex (+28), and Gemini (+19). It never reversed.
-- Grounding also cut false alarms. The grounded tester wrongly rejected correct code 0% of the time, against 33% for ungrounded "test the edges" prompting.
-- A weaker model with this discipline beat a stronger model without it.
-
-One honest boundary: on clean, well-specified algorithmic problems, where models rarely slip in the first place, grounding neither helps nor hurts. The gain shows up on the spec-completeness bugs that dominate real one-shot failures. Throughline puts that discipline on rails: the Tester writes tests from your spec's rules, and an independent Reviewer checks the fix against the standards' source text.
+→ The numbers, the side-by-side runs, and a solved **SWE-bench Lite** issue: [validation-runs/](docs/validation-runs/).
 
 ## How it works
 
@@ -67,31 +54,19 @@ Eight agents, each with one job, handing off through files rather than reaching 
 
 The review step is the heart of it. The Reviewer reads your standards from source (not the implementer's summary of them) and returns PASS, CONDITIONAL_PASS, or FAIL on a confidence score. It's the same kind of model on both sides, so treat it as a strong check rather than a second human. Your merge is the real final check.
 
-A few things hold this together. Every change cites the spec requirement it satisfies, the standard clause it follows, and an example when one exists, so it's cite-or-don't-ship. Each change is a *slice* (one feature, fix, or refactor), and all of its edits land on a dedicated git branch named `sdd/<slice>` — e.g. `sdd/orders-pagination` (`sdd` = spec-driven development) — created **in your target project's own repo**, not in the framework. Nothing touches your main branch until you merge; to undo, just delete the branch. (A target with no git repo is handled too: originals are backed up under `work-queue/backups/<slice>/` instead.) Agents never merge or push, and `/standards/` is read-only at the hook level. And the knowledge compounds: your standards, examples, and past decisions live in a shared wiki that every later task draws on.
+A few things hold this together. Every change cites the spec requirement it satisfies, the standard clause it follows, and an example when one exists — cite-or-don't-ship. Each change is a *slice* whose edits land on a dedicated `sdd/<slice>` branch **in your target's own repo**, not the framework; nothing touches your main branch until you merge, and to undo you just delete the branch (a target with no git repo is handled too — originals are backed up under `work-queue/backups/<slice>/`). Agents never merge or push, `/standards/` is read-only at the hook level, and a shared wiki compounds knowledge across tasks.
 
-### Does the review actually catch real bugs?
-
-We built the same three tasks two ways, plain (one quick pass) and through Throughline, with the same model both times. Each plain version passed its own tests and looked finished. The review step found a real bug in all three:
-
-| Task | Plain version (tests passed) | What the review caught |
-|------|------------------------------|------------------------|
-| Compare versions | exit 0 | `1.0.0-rc.1` treated as **newer** than `1.0.0` (plus 3 more) |
-| Split money | exit 0 | `$10 ÷ 3` gives parts that add up to **$9.99**, not $10 |
-| Pagination | exit 0 | `page = -1` quietly returns the **wrong rows**, no error |
-
-These tasks had tricky edges on purpose, which is exactly where the check earns its keep; on a simple task done right it finds nothing. [Full run.](docs/validation-runs/2026-06-13-ab-suite.md)
-
-Throughline has also solved a real **SWE-bench Lite** issue end to end (in `pytest-dev/pytest`), working from the bug report alone. Its one-line root-cause fix passes the benchmark's own hidden test with no regressions (115 tests still green), and the Tester broadened the coverage past the single case in the gold test. [Full run.](docs/validation-runs/2026-06-16-swebench-pytest-11143.md)
+→ Deeper design: [ARCHITECTURE.md](ARCHITECTURE.md) · the rules every agent obeys: [the constitution](.throughline/memory/constitution.md).
 
 ## Requirements
 
-Close to nothing. Throughline is mostly markdown the model reads; the engine is the AI tool you already have.
+Close to nothing — Throughline is mostly markdown the model reads, and the engine is the AI tool you already have.
 
-- **git** — for the reversible per-change branches (`sdd/<slice>`, [explained above](#how-it-works)) and to read your target's state.
-- **One AI coding tool** — GitHub Copilot, Claude Code, Codex, or Cursor (or a rules-only tool like Aider/Windsurf). That's the engine.
-- That's it. Everything ships inside `.throughline/` (lifecycle commands, agent runbooks, bash + PowerShell helper scripts). Write-safety hooks need no extra runtime — they run on PowerShell on Windows and bash on macOS/Linux, with a plain-shell fallback so **Python is not required** (there's an optional Python path if you prefer it). The VS Code dashboard is optional and ships as a prebuilt `.vsix`, so it needs no Node build.
+- **git** — for the reversible per-change branches and to read your target's state.
+- **One AI coding tool** — any tool in the [table below](#pick-your-tool). That's the engine.
+- Everything else ships inside `.throughline/` (commands, runbooks, bash + PowerShell helper scripts). Write-safety hooks need **no extra runtime** (PowerShell on Windows, bash on macOS/Linux; **Python is not required**), and the VS Code dashboard is optional.
 
-So on any supported tool, on Windows/macOS/Linux: clone, run `tools/install.*` to generate adapters from `.throughline/adapters/source/` and wire hooks, then go. Generated tool folders (`.claude/`, `.cursor/`, `.github/agents/`, etc.) are **not** in git — install is required after every fresh clone.
+Generated tool folders (`.claude/`, `.cursor/`, `.github/agents/`, etc.) are **not** in git — run `tools/install.*` after every fresh clone to generate them from `.throughline/adapters/source/` and wire hooks.
 
 ## Getting started
 
@@ -116,7 +91,7 @@ Tier A tools enforce the guards (hooks); Tier B tools are advisory (rules-only).
 ### First run
 
 **Required:** run the installer before opening the repo in your AI tool. A fresh clone has no
-`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, or other generated wiring until you do.
+`.claude/`, `.github/agents/`, `.cursor/rules/`, or other generated wiring until you do.
 
 ```bash
 git clone <repo-url> && cd throughline
@@ -133,27 +108,15 @@ bash tools/install.sh
 
 ### Ways to use it
 
-1. Think first: `/dev:ideate "<rough idea>"` explores options and trade-offs before any spec (read-only; builds nothing).
-2. One command for the whole lifecycle: `/dev:feature` runs specify through review.
-3. Cheaper modes: `--micro` (implement, test, review) or `--express` (skip the optional approval pauses).
-4. Phase by phase, if you want the control: `/throughline:specify`, `/throughline:clarify`, `/throughline:plan`, `/throughline:tasks`, `/throughline:implement`.
-5. Single commands, out of band: `/dev:ideate`, `/dev:analyze`, `/dev:test`, `/dev:review`, `/dev:audit`.
-6. Knowledge only: ingest your standards and examples and use the skills ad hoc.
+`/dev:feature` runs the whole lifecycle from one request. `--micro` (implement → test → review) and `--express` (skip the optional approval pauses) trade thoroughness for speed. You can also run each phase yourself (`/throughline:specify` … `/throughline:implement`), or single commands out of band (`/dev:ideate`, `/dev:analyze`, `/dev:test`, `/dev:review`, `/dev:audit`).
 
-Each one is spelled out in your tool's exact syntax in the [runtime guides](docs/runtimes/). Every slice also leaves a human-readable entry in `<target>/.throughline/CHANGELOG.md`, so each codebase carries its own record of what changed and why.
+Each is spelled out in your tool's exact syntax in the [runtime guides](docs/runtimes/) and the [building features](docs/04-building-features.md) guide. Every slice also leaves a human-readable entry in the target's own `.throughline/CHANGELOG.md`.
 
 ## For teams
 
-A better model makes each agent better. It doesn't fix consistency, audit trails, or trust across a team. That's the part Throughline is for. It turns one request into a change that is reviewed, recorded, and easy to undo:
+A better model makes each agent better; it doesn't fix consistency, audit trails, or trust across a team — that's the part Throughline is for. Your rules plus an independent review step make output consistent; every change links spec → task → rule → result and is recorded; hooks block risky writes and only people merge; and a shared wiki keeps the rules, examples, and decisions.
 
-| The problem | What helps |
-|-------------|------------|
-| Agents write code differently every time | Your rules, plus an independent review step |
-| No record of why something changed | Each change links spec to task to rule to result, and it's all saved |
-| Agents could break things | Hooks block risky writes and merges; only people merge |
-| Lessons get forgotten | A shared wiki keeps the rules, examples, and decisions |
-
-Does it save tokens? Per task, no, because it runs more steps. Over time it tends to pay for itself the way insurance does: a little extra on every task, returned on the ones where it catches a bug that would have been expensive to find later. It's worth it for code that matters, and overkill for throwaway changes, where `--micro` or plain Copilot is the better call.
+Does it save tokens? Per task, no — it runs more steps. Over time it pays off like insurance: a little extra on every task, returned on the ones where it catches a bug that would have been expensive to find later. Worth it for code that matters; for throwaway changes, `--micro` or plain chat is the better call.
 
 ## Layout
 

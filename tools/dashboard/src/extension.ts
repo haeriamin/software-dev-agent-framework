@@ -60,6 +60,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let debounce: NodeJS.Timeout | undefined;
   const armWatcher = (): void => {
     watcher?.dispose();
+    watcher = undefined;
     const m = resolveModel();
     if (!m) {
       return;
@@ -76,8 +77,17 @@ export function activate(context: vscode.ExtensionContext): void {
     watcher.onDidCreate(onChange);
     watcher.onDidChange(onChange);
     watcher.onDidDelete(onChange);
-    context.subscriptions.push(watcher);
   };
+  // Dispose the current watcher and cancel any pending debounce on shutdown; re-arming above
+  // already disposes the previous watcher, so watchers never accumulate in context.subscriptions.
+  context.subscriptions.push({
+    dispose: (): void => {
+      watcher?.dispose();
+      if (debounce) {
+        clearTimeout(debounce);
+      }
+    },
+  });
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {

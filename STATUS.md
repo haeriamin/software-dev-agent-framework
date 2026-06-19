@@ -5,6 +5,8 @@
 ## What it is
 
 It is a self-contained spec-driven development platform: lifecycle commands (`/throughline.*`), agent commands (`/dev.*`), standards, and multi-agent review gates — all in one repo. It drives your AI coding tool. Canonical content lives under `.throughline/adapters/source/`; after clone, run `tools/install.sh` (or `install.ps1`) to generate your tool's wiring locally — generated adapter folders are not committed to git.
+
+Only a small part of the framework is executable code (the write-safety hooks, the helper
 scripts, the dashboard). Most of the framework is written instructions that the model follows. So how
 well it works depends on how well the model follows instructions — helped by an independent
 review step and by hooks that block unsafe actions, not by a program that forces every rule.

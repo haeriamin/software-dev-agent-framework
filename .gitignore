@@ -27,11 +27,11 @@ targets/*.code-workspace
 .github/hooks/
 .github/copilot-instructions.md
 .github/pull_request_template.md
-AGENTS.md
-CLAUDE.md
-GEMINI.md
-QWEN.md
-opencode.json
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/QWEN.md
+/opencode.json
 .throughline/adapters/generated/
 .throughline/integrations/
 

@@ -22,7 +22,9 @@ spawn_note = spawn it as a separate Codex subagent (Codex has no declarative han
 
 emit_prompts = false
 emit_hooks = false
-emit_rules_file = false
+emit_rules_file = true
+rules_format = codex
+rules_file = AGENTS.md
 emit_global_rules = false
 emit_skills = false
 emit_manifest = false

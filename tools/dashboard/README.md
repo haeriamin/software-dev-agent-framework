@@ -6,7 +6,7 @@ Live visibility into the framework's plain-text state — no database, the repo 
 
 **Activity-bar views** ("SDD Dashboard" container):
 - **Targets** — registered external projects (`targets/*.yml`) with status and stack; click opens the entry.
-- **Slices** — every `specs/NNN-*` with lifecycle phase (Specified → Clarified → Planned → Tasked → Implementing → Done) and task progress parsed from `tasks.md` checkboxes.
+- **Slices** — every `specs/NNN-*` with lifecycle phase (Needs Clarification → Specified → Planned → Tasked → Implementing → Implemented → Done) and task progress parsed from `tasks.md` checkboxes.
 - **Work Queue** — pending / in-progress / completed / escalated items from `work-queue/`.
 - **Reports** — test + review reports from `review-reports/`, grouped by target, with verdict badges (PASS / CONDITIONAL_PASS / FAIL).
 

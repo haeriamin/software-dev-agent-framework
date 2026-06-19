@@ -22,7 +22,9 @@ spawn_note = delegate to it via the Agent tool when running as a top-level conve
 
 emit_prompts = false
 emit_hooks = false
-emit_rules_file = false
+emit_rules_file = true
+rules_format = claude
+rules_file = CLAUDE.md
 emit_global_rules = false
 emit_skills = false
 emit_manifest = false
