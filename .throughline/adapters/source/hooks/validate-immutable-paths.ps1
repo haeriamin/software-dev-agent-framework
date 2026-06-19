@@ -1,6 +1,6 @@
 # validate-immutable-paths.ps1
 # PreToolUse hook — blocks write operations targeting immutable directories.
-# Tool call context arrives as JSON on stdin. Exit 1 with a message to block; exit 0 to allow.
+# Tool call context arrives as JSON on stdin. Exit 2 with a message to block; exit 0 to allow.
 $ErrorActionPreference = "SilentlyContinue"
 
 $raw = [Console]::In.ReadToEnd()
@@ -25,7 +25,7 @@ foreach ($prefix in @("standards/", "exemplars/")) {
         Write-Output "BLOCKED: Attempted write to immutable path: $filePath"
         Write-Output "The /standards/ and /exemplars/ directories are READ ONLY (Constitution Principle I)."
         Write-Output "Agents must never modify source material. Add new files via human curation only."
-        exit 1
+        exit 2
     }
 }
 exit 0

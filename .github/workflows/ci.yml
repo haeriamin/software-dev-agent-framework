@@ -87,7 +87,7 @@ jobs:
           echo '{"tool_name":"Write","tool_input":{"file_path":"wiki/concepts/x.md"}}' \
             | .claude/hooks/validate-immutable-paths.sh
           echo '{"tool_input":{"path":"exemplars/x.ts"}}' \
-            | .github/hooks/scripts/validate-immutable-paths.sh && exit 1 || [ $? -eq 1 ]
+            | .github/hooks/scripts/validate-immutable-paths.sh && exit 1 || [ $? -eq 2 ]
           echo '{"tool_input":{"file_path":"README.md"}}' \
             | .github/hooks/scripts/check-code-quality.sh
 
@@ -97,7 +97,7 @@ jobs:
           echo '{"tool_input":{"command":"echo x > standards/y.md"}}' \
             | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
           echo '{"tool_input":{"command":"cp a exemplars/b"}}' \
-            | .github/hooks/scripts/validate-bash-safety.sh && exit 1 || [ $? -eq 1 ]
+            | .github/hooks/scripts/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
           echo '{"tool_input":{"command":"git push origin main"}}' \
             | .claude/hooks/validate-bash-safety.sh && exit 1 || [ $? -eq 2 ]
           echo '{"tool_input":{"command":"npm test"}}' \

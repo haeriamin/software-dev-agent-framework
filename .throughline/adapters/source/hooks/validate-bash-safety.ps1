@@ -4,7 +4,7 @@
 #  - blocks `git push` and `git merge` (merging/pushing is human — Constitution Principle VI)
 # Conservative by design: a read-only command that merely mentions an immutable path together
 # with a write token is blocked too — re-form the command without the write token.
-# Protocol: stdin JSON {tool_name, tool_input:{command}}; exit 1 + stdout = block.
+# Protocol: stdin JSON {tool_name, tool_input:{command}}; exit 2 + stdout = block.
 $ErrorActionPreference = "SilentlyContinue"
 
 $raw = [Console]::In.ReadToEnd()
@@ -18,7 +18,7 @@ $c = "$cmd".Replace('\', '/')
 if ($c -match '(^|[;&|"]|\\n)\s*git(\s+(-c\s+\S+|-C\s+\S+|--[a-zA-Z-]+(=\S+)?|-[a-zA-Z]+))*\s+(push|merge)([^a-zA-Z0-9_]|$)') {
     Write-Output "BLOCKED: 'git push' / 'git merge' are human-only actions (Constitution Principle VI)."
     Write-Output "Present the sdd/<slice> branch in your report; the human merges."
-    exit 1
+    exit 2
 }
 
 if ($c -match '(^|/|\s|["'']|=)(standards|exemplars)/') {
@@ -26,7 +26,7 @@ if ($c -match '(^|/|\s|["'']|=)(standards|exemplars)/') {
     if ($c -match $writeTokens) {
         Write-Output "BLOCKED: shell command combines an immutable path (/standards/ or /exemplars/) with a write operation (Constitution Principle I)."
         Write-Output "These directories are human-curated and READ ONLY to agents. Read without redirection, or stop and escalate."
-        exit 1
+        exit 2
     }
 }
 exit 0

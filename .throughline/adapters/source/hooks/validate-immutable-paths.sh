@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # validate-immutable-paths.sh (Claude Code PreToolUse hook — POSIX variant)
 # Blocks write tools targeting /standards/ or /exemplars/ (Constitution Principle I).
-# Claude Code protocol: stdin JSON {tool_name, tool_input}; exit 1 + stderr = block.
+# Claude Code protocol: stdin JSON {tool_name, tool_input}; exit 2 + stderr = block.
 # Dependency-free: uses a JSON parser if one is present, else a tolerant grep fallback.
 set -uo pipefail
 
@@ -39,7 +39,7 @@ case "$NORMALIZED" in
     echo "BLOCKED: '$FILE_PATH' is inside an immutable directory (/standards/ or /exemplars/)."
     echo "Constitution Principle I: these paths are human-curated and READ ONLY to agents."
     echo "Stop and escalate per .github/instructions/escalation-protocol.instructions.md."
-    exit 1
+    exit 2
     ;;
 esac
 exit 0
