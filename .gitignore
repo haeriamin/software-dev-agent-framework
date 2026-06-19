@@ -43,6 +43,7 @@ tools/dashboard/*.vsix
 # OS / editor
 .DS_Store
 Thumbs.db
+.vscode/
 
 # Local editor workspace files at repo root
 /*.code-workspace
